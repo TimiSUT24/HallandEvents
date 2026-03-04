@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Halland Events",
+  "version": "1.0",
+  "description": "View upcoming events in your popup!",
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": {
+      "16": "HallandEvents16.png",
+      "48": "HallandEvents48.png",
+      "128": "HallandEvents128.png"
+    }
+  },
+  "permissions": [],
+  "host_permissions": ["https://eventextension.onrender.com/*"]
+}
