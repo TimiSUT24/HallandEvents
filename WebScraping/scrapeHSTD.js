@@ -34,7 +34,7 @@ const categoryMap = {
 
 
 (async () => {
-    const browser = await chromium.launch({ headless: true, slowMo: 100 });
+    const browser = await chromium.launch({ headless: false, slowMo: 100 });
     const page = await browser.newPage();
 
     await page.goto(`${halmstadUrl}`, { waitUntil: 'domcontentloaded' });
@@ -192,105 +192,79 @@ const categoryMap = {
         return false;
     }
 
-    const eventMap = new Map();
+    // open filter once to read category values
+const filterButton = page.getByRole('button', { name: 'Utökad filtrering' });
+const isExpanded = await filterButton.getAttribute('aria-expanded');
 
-    for (const category of categories){       
+if (isExpanded !== 'true') {
+    await filterButton.click();
+    await page.waitForTimeout(500);
+}
+
+// read category values from inputs
+const categoryInputs = await page.$$eval(
+    'li.lp-cruncho-filter-multiselect-option input.lp-cruncho-filter-multiselect-option__input',
+    inputs => inputs.map(i => ({
+        name: i.nextElementSibling?.innerText.trim(),
+        value: i.value
+    }))
+);
+
+console.log("Found categories:", categoryInputs);
+
+const eventMap = new Map();
+
+for (const cat of categoryInputs) {
+
+    const category = cat.name;
     const mappedCategory = categoryMap[category];
+
     if (!mappedCategory) {
         console.log(`⚠️ Skipping unknown category "${category}"`);
         continue;
     }
-    console.log(`🔍 Selecting Halmstad category "${category}" → Frontend category "${mappedCategory}"`);
-        
 
-//remove previous selected category to prevent duplicates
-const options = await page.$$('li.lp-cruncho-filter-multiselect-option');
+    console.log(`🔍 Scraping category "${category}"`);
 
-for (const option of options) {
-    const input = await option.$('input.lp-cruncho-filter-multiselect-option__input');
-    const label = await option.$('label.lp-cruncho-filter-multiselect-option__label');
+    const categoryUrl = `${halmstadUrl}?categories=${cat.value}`;
 
-    if (input && label) {
-        const isChecked = await input.isChecked();
-
-        if (isChecked) {
-            const labelText = await label.textContent();
-            console.log(`❌ Deselecting: ${labelText.trim()}`);
-            await label.click();
-            await page.waitForTimeout(300);
-        }
-    }
-}
-
-    //Select new category
-    
-const filterButton = page.getByRole('button', { name: 'Utökad filtrering' });
-
-const isExpanded = await filterButton.getAttribute('aria-expanded');
-
-if (isExpanded !== 'true') {
-    console.log('🔘 Öppnar filterpanelen...');
-    await filterButton.click();
-    await page.waitForTimeout(500); // vänta på eventuell animation
-} else {
-    console.log('✅ Filterpanelen är redan öppen (aria-expanded = true).');
-}
-
-
-// Locate the <li> that contains the category text and then its label
-const categoryOption = page.locator('li.lp-cruncho-filter-multiselect-option', {
-    hasText: category,
-});
-const label = categoryOption.locator('label.lp-cruncho-filter-multiselect-option__label');
-
-// Try clicking; if not visible, scroll to top and retry
-if (!(await label.isVisible().catch(() => false))) {
-    console.log(`🔼 Scrolling to top to look for category "${category}"...`);
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await page.waitForTimeout(500); // Wait for UI to update
-}
-
-if (!(await label.isVisible().catch(() => false))) {
-    console.log(`⚠️ Category "${category}" still not visible after scrolling. Skipping.`);
-    continue;
-}
-
-await label.click();
-await page.getByRole('button', { name: 'Filtrera' }).click();
-    
-    //Wait for page to load
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto(categoryUrl, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(1500);
 
-    //Loop Through all pages to get all event data 
-    let currentPage = 1; 
+    let currentPage = 1;
 
-    while(true){
+    while (true) {
+
         console.log(`Scraping page ${currentPage}`);
-        const events = await extractEvents(page);     
 
-        //Add category to each event
-        const categorizedEvents = events.map(e => ({ ...e }));
-        const eventKey = (event) => `${event.title}-${event.date}-${event.location}`;
+        const events = await extractEvents(page);
 
-        // Use a Set to track unique keys      
-        for (const event of categorizedEvents) {
-        const key = eventKey(event);
+        const eventKey = (event) => `${event.title}-${event.location}`;
+
+        for (const event of events) {
+
+            const key = eventKey(event);
 
             if (eventMap.has(key)) {
-        const existing = eventMap.get(key);
-        for (const cat of mappedCategory) {
-            if (!existing.categories.includes(cat)) {
-                existing.categories.push(cat);
+
+                const existing = eventMap.get(key);
+
+                for (const c of mappedCategory) {
+                    if (!existing.categories.includes(c)) {
+                        existing.categories.push(c);
+                    }
+                }
+
+            } else {
+
+                eventMap.set(key, {
+                    ...event,
+                    categories: [...mappedCategory]
+                });
+
             }
+
         }
-        } else {
-            eventMap.set(key, {
-                ...event,
-                categories: [...mappedCategory]
-            });
-}
-    }
 
         const found = await scrollToLoadMoreButton(page);
         if (!found){break;} 

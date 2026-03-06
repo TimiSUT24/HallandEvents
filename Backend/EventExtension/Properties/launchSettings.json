@@ -3,10 +3,11 @@
     "EventExtension": {
       "commandName": "Project",
       "launchBrowser": true,
+      "launchUrl": "scalar",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "https://localhost:58840;http://localhost:58841"
+      "applicationUrl": "https://localhost:7216;http://localhost:5248"
     }
   }
 }
