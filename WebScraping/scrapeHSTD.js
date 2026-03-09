@@ -222,7 +222,7 @@ const categoryMap = {
     async function getCategoryInputs(page) {
     for (let attempt = 0; attempt < 3; attempt++) {
         try {
-        await page.waitForSelector('li.lp-cruncho-filter-multiselect-option input.lp-cruncho-filter-multiselect-option__input', { timeout: 1000 });
+        await page.waitForSelector('li.lp-cruncho-filter-multiselect-option input.lp-cruncho-filter-multiselect-option__input', { timeout: 10000 });
         return await page.$$eval(
             "li.lp-cruncho-filter-multiselect-option input.lp-cruncho-filter-multiselect-option__input",
             (inputs) =>
