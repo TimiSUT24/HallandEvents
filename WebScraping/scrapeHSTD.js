@@ -30,7 +30,7 @@ const categoryMap = {
 
 
 (async () => {
-    const browser = await chromium.launch({ headless: true, slowMo: 100 });
+    const browser = await chromium.launch({ headless: false, slowMo: 100 });
     const page = await browser.newPage();
 
     await page.goto(`${halmstadUrl}`, { waitUntil: "domcontentloaded" });
@@ -211,35 +211,21 @@ const categoryMap = {
     // open filter once to read category values
     const filterButton = page.getByRole("button", { name: "Utökad filtrering" });
     const isExpanded = await filterButton.getAttribute("aria-expanded");
-
     if (isExpanded !== "true") {
         await filterButton.click();
         await page.waitForTimeout(500);
     }
 
     // read category values from inputs
-
-    async function getCategoryInputs(page) {
-    for (let attempt = 0; attempt < 3; attempt++) {
-        try {
-        await page.waitForSelector('li.lp-cruncho-filter-multiselect-option input.lp-cruncho-filter-multiselect-option__input', { timeout: 10000 });
-        return await page.$$eval(
-            "li.lp-cruncho-filter-multiselect-option input.lp-cruncho-filter-multiselect-option__input",
-            (inputs) =>
-            inputs.map((i) => ({
-                name: i.nextElementSibling?.innerText.trim(),
-                value: i.value,
-            })),
-        );
-        } catch (err) {
-        console.warn(`⚠️ Attempt ${attempt + 1} failed, retrying...`);
-        await page.waitForTimeout(1000);
-        }
-    }
-    throw new Error('Failed to get category inputs after 3 attempts');
-    }
-
-    const categoryInputs = await getCategoryInputs(page);
+    await page.waitForSelector('div.lp-cruncho-filter-multiselect ul.lp-cruncho-filter-multiselect__list', { timeout: 3000 });
+    const categoryInputs = await page.$$eval(
+        'div.lp-cruncho-filter-multiselect ul.lp-cruncho-filter-multiselect__list > li.lp-cruncho-filter-multiselect-option input.lp-cruncho-filter-multiselect-option__input',
+        (inputs) =>
+        inputs.map((i) => ({
+            name: i.nextElementSibling?.innerText.trim(),
+            value: i.value,
+        })),
+    );
 
     console.log("Found categories:", categoryInputs);
 
