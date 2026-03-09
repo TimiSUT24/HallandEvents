@@ -218,14 +218,28 @@ const categoryMap = {
     }
 
     // read category values from inputs
-    const categoryInputs = await page.$$eval(
-        "li.lp-cruncho-filter-multiselect-option input.lp-cruncho-filter-multiselect-option__input",
-        (inputs) =>
-        inputs.map((i) => ({
-            name: i.nextElementSibling?.innerText.trim(),
-            value: i.value,
-        })),
-    );
+
+    async function getCategoryInputs(page) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+        await page.waitForSelector('li.lp-cruncho-filter-multiselect-option input.lp-cruncho-filter-multiselect-option__input', { timeout: 1000 });
+        return await page.$$eval(
+            "li.lp-cruncho-filter-multiselect-option input.lp-cruncho-filter-multiselect-option__input",
+            (inputs) =>
+            inputs.map((i) => ({
+                name: i.nextElementSibling?.innerText.trim(),
+                value: i.value,
+            })),
+        );
+        } catch (err) {
+        console.warn(`⚠️ Attempt ${attempt + 1} failed, retrying...`);
+        await page.waitForTimeout(1000);
+        }
+    }
+    throw new Error('Failed to get category inputs after 3 attempts');
+    }
+
+    const categoryInputs = await getCategoryInputs(page);
 
     console.log("Found categories:", categoryInputs);
 
