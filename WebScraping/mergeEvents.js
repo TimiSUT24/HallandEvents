@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const files = fs.readdirSync('.').filter(f => f.endsWith('.json') && f !== 'allEvents.json');
+const files = fs.readdirSync('.').filter(f => f.startsWith('events') && f !== 'allEvents.json');
 
 let mergedEvents = [];
 
