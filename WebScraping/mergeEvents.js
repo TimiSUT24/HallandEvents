@@ -33,6 +33,6 @@ for (const file of files) {
   mergedEvents.push(...events);
   console.log(`✅ Loaded ${events.length} from ${file}`);
 }
-
-fs.writeFileSync('allEvents.json', JSON.stringify(mergedEvents, null, 2));
+const filePath = path.join(__dirname, 'allEvents.json');
+fs.writeFileSync(filePath, JSON.stringify(mergedEvents, null, 2));
 console.log(`📝 Merged total: ${mergedEvents.length} events saved to allEvents.json`);

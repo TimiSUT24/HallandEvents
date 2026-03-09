@@ -1,5 +1,6 @@
 const { chromium } = require('playwright');
 const fs = require('fs');
+const path = require('path');
 const falkenbergUrl ='https://www.falkenberg.se/evenemang';
 
 (async () => {
@@ -100,8 +101,7 @@ const falkenbergUrl ='https://www.falkenberg.se/evenemang';
 
 
     //Categories
-    const categories = ['Barn', 'Bio', 'Dans', 'Föreläsning', 'Gratis', 'Guidad tur', 'Historia', 'Höstlov', 'Humor', 'Jul', 'Konst', 'Marknad', 'Mat', 'Musik', 'Natur', 'Nöje', 'Restaurang'
-        , 'Sommarlov', 'Spel', 'Sport', 'Sportlov', 'Tävling', 'Teater', 'Ungdom', 'Utomhus', 'Utställning'];
+    const categories = ['Barn'];
 
     const eventMap = new Map();
 
@@ -179,8 +179,8 @@ const falkenbergUrl ='https://www.falkenberg.se/evenemang';
 
     const allEvents = Array.from(eventMap.values());
     console.log(allEvents);
-
-    fs.writeFileSync('eventsFBG.json', JSON.stringify(allEvents, null, 2), 'utf-8');
+    const filePath = path.join(__dirname, 'eventsFBG.json');
+    fs.writeFileSync(filePath, JSON.stringify(allEvents, null, 2), 'utf-8');
     console.log('📝 Events saved to eventsFBG.json');
 
     await browser.close();

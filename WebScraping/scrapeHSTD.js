@@ -1,5 +1,6 @@
 const { chromium } = require('playwright');
 const fs = require('fs');
+const path = require('path');
 
 const halmstadUrl = 'https://www.destinationhalmstad.se/evenemang';
 
@@ -208,31 +209,31 @@ const categoryMap = {
         return false;
     }
 
-   const filterButton = page.locator('div.lp-cruncho-filter-toggle');
-const panelUL = 'div.lp-cruncho-filter-multiselect ul.lp-cruncho-filter-multiselect__list';
+    const filterButton = page.locator('div.lp-cruncho-filter-toggle');
+    const panelUL = 'div.lp-cruncho-filter-multiselect ul.lp-cruncho-filter-multiselect__list';
 
-// Open filter if not already "expanded"
-const isExpanded = await filterButton.getAttribute('aria-expanded');
-console.log('Filter button aria-expanded before click:', isExpanded);
+    // Open filter if not already "expanded"
+    const isExpanded = await filterButton.getAttribute('aria-expanded');
+    console.log('Filter button aria-expanded before click:', isExpanded);
 
-if (isExpanded !== 'true') {
-  console.log('🔘 Clicking filter toggle to open panel...');
-  await filterButton.click();
-  await page.waitForTimeout(1000); // wait for JS to populate the list
-}
+    if (isExpanded !== 'true') {
+    console.log('🔘 Clicking filter toggle to open panel...');
+    await filterButton.click();
+    await page.waitForTimeout(1000); // wait for JS to populate the list
+    }
 
-// Wait for the <ul> to exist in the DOM, ignore visibility
-await page.waitForSelector(panelUL, { state: 'attached', timeout: 10000 });
+    // Wait for the <ul> to exist in the DOM, ignore visibility
+    await page.waitForSelector(panelUL, { state: 'attached', timeout: 10000 });
 
-// Now safely read category inputs
-const categoryInputs = await page.$$eval(
-  panelUL + ' > li.lp-cruncho-filter-multiselect-option input.lp-cruncho-filter-multiselect-option__input',
-  (inputs) =>
-    inputs.map(i => ({
-      name: i.nextElementSibling?.innerText?.trim() || null,
-      value: i.value || null,
-    }))
-);
+    // Now safely read category inputs
+    const categoryInputs = await page.$$eval(
+    panelUL + ' > li.lp-cruncho-filter-multiselect-option input.lp-cruncho-filter-multiselect-option__input',
+    (inputs) =>
+        inputs.map(i => ({
+        name: i.nextElementSibling?.innerText?.trim() || null,
+        value: i.value || null,
+        }))
+    );
 
     console.log("Found categories:", categoryInputs);
 
@@ -296,9 +297,9 @@ const categoryInputs = await page.$$eval(
 
     const allEvents = Array.from(eventMap.values());
     console.log(allEvents);
-
+    const filePath = path.join(__dirname, 'eventsHSTD.json');
     fs.writeFileSync(
-        "eventsHSTD.json",
+        filePath,
         JSON.stringify(allEvents, null, 2),
         "utf-8",
     );

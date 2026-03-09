@@ -1,13 +1,14 @@
 require('dotenv').config();
 const fs = require('fs');
 const axios = require('axios');
+const path = require('path');
 
 
 if (process.env.NODE_ENV === 'development') {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 }
-
-const allEvents = JSON.parse(fs.readFileSync('allEvents.json', 'utf-8'));
+const filePath = path.join(__dirname, 'allEvents.json');
+const allEvents = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 if(!allEvents.length){
   console.log("No events to upload");
   process.exit(1);
