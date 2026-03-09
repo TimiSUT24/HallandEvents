@@ -10,7 +10,7 @@ if (process.env.NODE_ENV === 'development') {
 const allEvents = JSON.parse(fs.readFileSync('allEvents.json', 'utf-8'));
 if(!allEvents.length){
   console.log("No events to upload");
-  process.exit(0);
+  process.exit(1);
 }
 
 axios.post(process.env.Upload_API_URL, allEvents,{
@@ -26,4 +26,5 @@ axios.post(process.env.Upload_API_URL, allEvents,{
     } else {
       console.error(err.message);
     }
+    process.exit(1);
   });

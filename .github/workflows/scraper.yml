@@ -78,7 +78,7 @@ jobs:
 
       - name: Upload events
         env:
-          Upload_API_URL: ${{ secrets.Upload_API_URL }}
-          UploadEventsKey: ${{ secrets.UploadEventsKey }}
+          Upload_API_URL: ${{ secrets.UPLOAD_API_URL }}
+          UploadEventsKey: ${{ secrets.UPLOADEVENTSKEY }}
         run: node uploadEvents.js
         working-directory: WebScraping
