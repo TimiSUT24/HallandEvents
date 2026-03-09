@@ -17,7 +17,7 @@ function getEventFiles(dir) {
   return files;
 }
 
-const files = getEventFiles(__dirname);// scan in webscraping folder only 
+const files = getEventFiles(__dirname);
 console.log(files);
 let mergedEvents = [];
 
