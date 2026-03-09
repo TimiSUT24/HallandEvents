@@ -208,28 +208,31 @@ const categoryMap = {
         return false;
     }
 
-    // open filter once to read category values
-    const filterButton = page.locator('div.lp-cruncho-filter-toggle');
+   const filterButton = page.locator('div.lp-cruncho-filter-toggle');
+const panelUL = 'div.lp-cruncho-filter-multiselect ul.lp-cruncho-filter-multiselect__list';
 
-    // Click only if the panel is collapsed
-    const panel = page.locator('div.lp-cruncho-filter-multiselect ul.lp-cruncho-filter-multiselect__list');
+// Open filter if not already "expanded"
+const isExpanded = await filterButton.getAttribute('aria-expanded');
+console.log('Filter button aria-expanded before click:', isExpanded);
 
-    if (!(await panel.isVisible())) {
-    console.log('🔘 Opening filter panel...');
-    await filterButton.click();
-    await page.waitForTimeout(500); // wait for animation
-    await panel.waitFor({ state: 'visible', timeout: 5000 }); // ensure it's fully visible
-    }
+if (isExpanded !== 'true') {
+  console.log('🔘 Clicking filter toggle to open panel...');
+  await filterButton.click();
+  await page.waitForTimeout(1000); // wait for JS to populate the list
+}
 
-    // read category values from inputs
-    const categoryInputs = await page.$$eval(
-        'div.lp-cruncho-filter-multiselect ul.lp-cruncho-filter-multiselect__list > li.lp-cruncho-filter-multiselect-option input.lp-cruncho-filter-multiselect-option__input',
-        (inputs) =>
-        inputs.map((i) => ({
-            name: i.nextElementSibling?.innerText.trim(),
-            value: i.value,
-        })),
-    );
+// Wait for the <ul> to exist in the DOM, ignore visibility
+await page.waitForSelector(panelUL, { state: 'attached', timeout: 10000 });
+
+// Now safely read category inputs
+const categoryInputs = await page.$$eval(
+  panelUL + ' > li.lp-cruncho-filter-multiselect-option input.lp-cruncho-filter-multiselect-option__input',
+  (inputs) =>
+    inputs.map(i => ({
+      name: i.nextElementSibling?.innerText?.trim() || null,
+      value: i.value || null,
+    }))
+);
 
     console.log("Found categories:", categoryInputs);
 
