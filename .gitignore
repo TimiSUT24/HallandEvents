@@ -400,3 +400,7 @@ dist.crx
 dist.pem
 .env
 /Backend/EventExtension/appsettings.json
+/WebScraping/eventsVBG.json
+/WebScraping/eventsHSTD.json
+/WebScraping/eventsFBG.json
+/WebScraping/allEvents.json
