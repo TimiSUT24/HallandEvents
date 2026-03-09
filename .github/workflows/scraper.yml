@@ -28,18 +28,21 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: WebScraping
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
+        working-directory: WebScraping
         
       - name: Run scraper
         run: node ${{ matrix.scraper }}
+        working-directory: WebScraping
 
       - name: Upload scraper result
         uses: actions/upload-artifact@v4
         with:
           name: events-${{ matrix.scraper }}
-          path: "*.json"
+          path: "WebScraping/*.json"
 
 
   merge-and-upload:
@@ -58,7 +61,7 @@ jobs:
 
       - name: Move JSON files
         run: |
-          find events -name "*.json" -exec mv {} . \;
+          find events -name "*.json" -exec mv {} WebScraping/ \;
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -67,12 +70,15 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: WebScraping
 
       - name: Merge events
         run: node mergeEvents.js
+        working-directory: WebScraping
 
       - name: Upload events
         env:
           Upload_API_URL: ${{ secrets.Upload_API_URL }}
           UploadEventsKey: ${{ secrets.UploadEventsKey }}
         run: node uploadEvents.js
+        working-directory: WebScraping
