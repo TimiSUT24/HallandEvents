@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {getEvents} from '../services/api';
 import '../CSS/eventlist.css';
 
