@@ -209,15 +209,19 @@ const categoryMap = {
     }
 
     // open filter once to read category values
-    const filterButton = page.getByRole("button", { name: "Utökad filtrering" });
-    const isExpanded = await filterButton.getAttribute("aria-expanded");
-    if (isExpanded !== "true") {
-        await filterButton.click();
-        await page.waitForTimeout(500);
+    const filterButton = page.locator('div.lp-cruncho-filter-toggle');
+
+    // Click only if the panel is collapsed
+    const panel = page.locator('div.lp-cruncho-filter-multiselect ul.lp-cruncho-filter-multiselect__list');
+
+    if (!(await panel.isVisible())) {
+    console.log('🔘 Opening filter panel...');
+    await filterButton.click();
+    await page.waitForTimeout(500); // wait for animation
+    await panel.waitFor({ state: 'visible', timeout: 5000 }); // ensure it's fully visible
     }
 
     // read category values from inputs
-    await page.waitForSelector('div.lp-cruncho-filter-multiselect ul.lp-cruncho-filter-multiselect__list', { timeout: 3000 });
     const categoryInputs = await page.$$eval(
         'div.lp-cruncho-filter-multiselect ul.lp-cruncho-filter-multiselect__list > li.lp-cruncho-filter-multiselect-option input.lp-cruncho-filter-multiselect-option__input',
         (inputs) =>
