@@ -3,7 +3,6 @@ using EventClassLibrary.DTO;
 using EventClassLibrary.Models;
 using EventExtension.Data;
 using EventExtension.Services.Interfaces;
-using HtmlAgilityPack;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
