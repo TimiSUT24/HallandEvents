@@ -101,7 +101,8 @@ const falkenbergUrl ='https://www.falkenberg.se/evenemang';
 
 
     //Categories
-    const categories = ['Barn'];
+    const categories = ['Barn', 'Bio', 'Dans', 'Föreläsning', 'Gratis', 'Guidad tur', 'Historia', 'Höstlov', 'Humor', 'Jul', 'Konst', 'Marknad', 'Mat', 'Musik', 'Natur', 'Nöje', 'Restaurang'
+        , 'Sommarlov', 'Spel', 'Sport', 'Sportlov', 'Tävling', 'Teater', 'Ungdom', 'Utomhus', 'Utställning'];
 
     const eventMap = new Map();
 
