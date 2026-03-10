@@ -6,9 +6,17 @@ on:
   workflow_dispatch: # Optional: allows manual run
 
 jobs:
-  run-scraper:
+  scrape:
     runs-on: ubuntu-latest
     environment: WebScrapeSecrets
+
+    strategy:
+        fail-fast: false
+        matrix:
+            scraper: 
+             - scrapeFBG.js
+             - scrapeHSTD.js
+             - scrapeVBG.js 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -19,13 +27,59 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
+        working-directory: WebScraping
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
+        working-directory: WebScraping
+        
+      - name: Run scraper
+        run: node ${{ matrix.scraper }}
+        working-directory: WebScraping
 
-      - name: Run scrape & upload
+      - name: Upload scraper result
+        uses: actions/upload-artifact@v4
+        with:
+          name: events-${{ matrix.scraper }}
+          path: "WebScraping/*.json"
+
+
+  merge-and-upload:
+    runs-on: ubuntu-latest
+    needs: scrape
+    if: always()
+    environment: WebScrapeSecrets
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Download scraper artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: events
+
+      - name: Move JSON files
+        run: |
+          find events -name "*.json" -exec mv {} WebScraping/ \;
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: WebScraping
+
+      - name: Merge events
+        run: node mergeEvents.js
+        working-directory: WebScraping
+
+      - name: Upload events
+        working-directory: WebScraping
         env:
-          Upload_API_URL: ${{ secrets.UPLOAD_API_URL }}
-          UploadEventsKey: ${{ secrets.UPLOADEVENTSKEY }}
-        run: node scrapeAndUpload.js
+            Upload_API_URL: ${{ secrets.UPLOAD_API_URL }}
+            UploadEventsKey: ${{ secrets.UPLOADEVENTSKEY }}
+        run: node uploadEvents.js

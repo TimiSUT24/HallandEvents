@@ -1,5 +1,6 @@
 const { chromium } = require('playwright');
 const fs = require('fs');
+const path = require('path');
 const varbergUrl = 'https://visitvarberg.se/evenemang';
 
 //Categories
@@ -171,8 +172,8 @@ await clickCategory.click();
 
     const allEvents = Array.from(eventMap.values());
     console.log(allEvents);
-
-    fs.writeFileSync('eventsVBG.json', JSON.stringify(allEvents, null, 2), 'utf-8');
+    const filePath = path.join(__dirname, 'eventsVBG.json');
+    fs.writeFileSync(filePath, JSON.stringify(allEvents, null, 2), 'utf-8');
     console.log('📝 Events saved to eventsVBG.json');
 
     await browser.close();

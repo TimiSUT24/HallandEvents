@@ -1,6 +1,6 @@
 import axios from 'axios'; 
 
-const API_BASE_URL = 'https://eventextension.onrender.com/Event/GetAllEvents'
+const API_BASE_URL = import.meta.env.VITE_API_EVENTS_URL;
 
 export const getEvents = async () => {
     try{
