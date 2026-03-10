@@ -13,7 +13,7 @@ if(!allEvents.length){
   console.log("No events to upload");
   process.exit(1);
 }
-
+console.log(process.env.Upload_API_URL);
 axios.post(process.env.Upload_API_URL, allEvents,{
   headers:{
     'X-API-KEY': process.env.UploadEventsKey

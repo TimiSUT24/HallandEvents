@@ -15,8 +15,6 @@ jobs:
         matrix:
             scraper: 
              - scrapeFBG.js
-             - scrapeVBG.js
-             - scrapeHSTD.js
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -49,6 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: scrape
     if: always()
+    environment: WebScrapeSecrets
 
     steps:
       - name: Checkout repo
@@ -77,8 +76,8 @@ jobs:
         working-directory: WebScraping
 
       - name: Upload events
-        env:
-          Upload_API_URL: ${{ secrets.UPLOAD_API_URL }}
-          UploadEventsKey: ${{ secrets.UPLOADEVENTSKEY }}
-        run: node uploadEvents.js
         working-directory: WebScraping
+        env:
+            Upload_API_URL: ${{ secrets.UPLOAD_API_URL }}
+            UploadEventsKey: ${{ secrets.UPLOADEVENTSKEY }}
+        run: node uploadEvents.js
