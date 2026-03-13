@@ -404,3 +404,4 @@ dist.pem
 /WebScraping/eventsHSTD.json
 /WebScraping/eventsFBG.json
 /WebScraping/allEvents.json
+/Backend/EventExtension/appsettings.json
