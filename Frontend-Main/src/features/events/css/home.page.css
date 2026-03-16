@@ -1,0 +1,16 @@
+.home-page{
+    width:100%;
+    background-color: blue;
+}
+
+.home-page header{
+    width:100%;
+    min-height:400px;
+    background-color: purple;
+}
+
+.home-page-filter{
+    width:100%;
+    min-height:150px;
+    background-color: green;
+}

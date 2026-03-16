@@ -1,4 +1,5 @@
 import type { Event } from "../types/event";
+import "../css/event.card.css";
 
 type Props ={
     event: Event;

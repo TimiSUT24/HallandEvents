@@ -2,10 +2,12 @@ import {useState, useEffect} from "react";
 import type { Event } from "../types/event";
 import {eventService} from "../../../services/event.service";
 import EventCard from "../components/event.card";
+import ErrorMessages from "../components/errors.messages";
+import "../css/home.page.css";
 
 export default function HomePage(){
     const [events, setEvents] = useState<Event[]>([]);
-    const [error, setError] = useState("");
+    const [errors, setErrors] = useState<string[]>([]);
 
     useEffect(() =>{
         async function fetchEvents(){
@@ -13,20 +15,24 @@ export default function HomePage(){
                 const data = await eventService.getEvents();
                 setEvents(data);
             }
-            catch{
-                setError("Could not load events");
+            catch(error:any){
+                setErrors(error.messages);
             }
         }
         fetchEvents();
     }, [])
 
-    if(error) return <p>{error}</p>
+    if(errors.length > 0) return <ErrorMessages messages={errors}/>
     return(
         <div className="home-page">
+            <header> s</header>
+            <div className="home-page-filter">
+                s
+            </div>
             <div className="events-grid">
-                {events.map((event)=>{
+                {events.map((e)=>{
                     return(
-                        <EventCard key={event.id} event={event}/>
+                        <EventCard key={e.id} event={e}/>
                     )
                 })}
             </div>

@@ -3,7 +3,7 @@ import type { Event } from "../features/events/types/event";
 
 export const eventService = {
     async getEvents(): Promise<Event[]>{
-        const response = await api.get<Event[]>("/GetAllEvents");
+        const response = await api.get<Event[]>("/Event/GetAllEvents");
         return response.data;
     }
 }
