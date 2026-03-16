@@ -1,6 +1,6 @@
 .home-page{
     width:100%;
-    background-color: blue;
+    background-color: whitesmoke;
 }
 
 .home-page header{
@@ -9,8 +9,28 @@
     background-color: purple;
 }
 
+.events-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+    padding:20px;
+}
+
 .home-page-filter{
     width:100%;
     min-height:150px;
     background-color: green;
+}
+
+.home-page footer{
+    width:100%;
+    height:150px;
+    border-top:1px solid rgba(0, 0, 0, 0.163);
+    color:black;
+}
+
+@media (max-width: 450px){
+    .events-grid{
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
 }

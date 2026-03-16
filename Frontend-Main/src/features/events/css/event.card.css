@@ -1,4 +1,79 @@
 .event-card{
-    width: 300px;
-    background-color: orange;
+    display:flex;
+    flex-direction: column;
+    width:100%;
+    background-color: white;
+    border-radius: 10px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    -ms-border-radius: 10px;
+    -o-border-radius: 10px;
+}
+
+.event-card h1{
+    color:black
+}
+
+.event-card p{
+    color:rgb(82, 78, 78);
+}
+
+.event-card-image img{
+    width:100%;
+    min-height:250px;
+    max-height:250px;
+    border-radius:10px;
+    -webkit-border-radius:10px;
+    -moz-border-radius:10px;
+    -ms-border-radius:10px;
+    -o-border-radius:10px;
+    border-bottom-right-radius: 0px;
+    border-bottom-left-radius:0px;
+}
+
+.event-card-body{
+    height:100%;
+    padding:20px;
+    display:flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.event-card-body-content{
+    text-align: left;
+    display:flex;
+    flex-direction: column;
+}
+
+.event-card-location{
+    display:flex;
+    flex-direction: row;
+    gap:20px;
+    text-align: left;
+}
+
+.event-card-location p{
+    display:flex;
+    gap:2px;
+}
+
+.event-card-dates{
+    display:flex;
+    flex-direction: row;
+    gap:20px;
+}
+
+.event-card-dates p{
+    display:flex;
+    gap:2px;
+}
+
+.event-card-link a{
+    color:black;
+}
+
+@media (max-width: 450px){
+    .event-card-body-content h1{
+        font-size:22px;
+    }
 }

@@ -25,9 +25,9 @@ export default function HomePage(){
     if(errors.length > 0) return <ErrorMessages messages={errors}/>
     return(
         <div className="home-page">
-            <header> s</header>
+            <header> </header>
             <div className="home-page-filter">
-                s
+                
             </div>
             <div className="events-grid">
                 {events.map((e)=>{
@@ -36,6 +36,7 @@ export default function HomePage(){
                     )
                 })}
             </div>
+            <footer>Halland Events</footer>
 
         </div>
     )
