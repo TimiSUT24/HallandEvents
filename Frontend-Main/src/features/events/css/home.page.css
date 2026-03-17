@@ -17,9 +17,10 @@
 }
 
 .home-page-filter{
-    width:100%;
+    max-width:1400px;
     min-height:150px;
     background-color: green;
+    margin:0 auto;
 }
 
 .home-page footer{
