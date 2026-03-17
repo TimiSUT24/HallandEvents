@@ -17,7 +17,7 @@
     -moz-border-radius:10px;
     -ms-border-radius:10px;
     -o-border-radius:10px;
-    border:solid 1px rgb(57, 157, 234);
+    border:solid 1px rgb(195, 199, 202);
     background-color: white;
     color:black;
     padding-left:10px;
@@ -42,4 +42,50 @@
 
 .filter-select{
     width:15%;
+    color:black;
+}
+
+.category-buttons{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    margin-top:20px;
+    gap:10px;
+    min-height:30px;
+}
+
+.category-buttons button{
+    border-radius: 10px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    -ms-border-radius: 10px;
+    -o-border-radius: 10px;
+    border:none;
+    color:black;
+    background-color: rgba(221, 221, 221, 0.514);
+}
+
+.category-buttons button:focus{
+    color:white;
+    background-color:rgb(0, 81, 255);
+}
+
+@media (max-width:1250px){
+    .filter-section{
+        flex-direction:column;
+    }
+
+    .filter-select{
+        width:100%;
+    }
+
+
+    .filter-section input{
+        min-height:40px;
+    }
+    *,
+    *::before,
+    *::after {
+    box-sizing: border-box;
+    }   
+    
 }

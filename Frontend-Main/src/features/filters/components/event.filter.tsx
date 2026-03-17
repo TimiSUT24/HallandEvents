@@ -27,19 +27,22 @@ export default function EventFilter({filter, onChange, categories, cities}: Prop
                 <div className="filter-search-div">
                     <CiSearch/>
                     <input type="text" 
-                    placeholder ="Search"
+                    placeholder ="Sök"
                     value={filter.search}
                     onChange={(e) => update("search", e.target.value)}/>
                 </div>
+            
+                    <Select
+                    options={cityOptions}
+                    value={cityOptions.find(o => o.value === filter.location) || null}
+                    onChange={(option) => update("location", option?.value ?? "")}
+                    placeholder ="Alla städer"
+                    isClearable
+                    className="filter-select"
+                    styles={{placeholder: (base) => ({...base,color:"black"}) 
+                    }}
+                    />       
                 
-                <Select
-                options={cityOptions}
-                value={cityOptions.find(o => o.value === filter.location) || null}
-                onChange={(option) => update("location", option?.value ?? "")}
-                placeholder ="All cities"
-                isClearable
-                className="filter-select"
-                />
 
             </div>
             
