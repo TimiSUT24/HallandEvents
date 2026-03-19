@@ -62,11 +62,16 @@
     border:none;
     color:black;
     background-color: rgba(221, 221, 221, 0.514);
+    min-height:30px;
 }
 
-.category-buttons button:focus{
+.category-buttons button.active{
     color:white;
     background-color:rgb(0, 81, 255);
+}
+
+.toggle-categories{
+    cursor: pointer;
 }
 
 @media (max-width:1250px){

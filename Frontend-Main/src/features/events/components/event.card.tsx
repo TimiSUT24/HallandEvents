@@ -30,17 +30,14 @@ export default function EventCard({event}: Props){
                         {event.attendance && <p className="event-card-attendance"><BsPeopleFill/> {event.attendance}</p>}
                     </div>
                     <div className="event-card-dates">
-                        <p><CiCalendar/> {startDate?.startDate}</p>
-                        <p>{endDate?.endDate}</p>
-                        <p><MdAccessTime/>{startDate.time}</p>
+                        {startDate?.startDate && <p><CiCalendar/> {startDate?.startDate}</p>}
+                        {endDate?.endDate && <p>{endDate?.endDate}</p>}
+                        {startDate?.time && <p><MdAccessTime/>{startDate.time}</p>}
                     </div>
                     <div className="event-card-link">
                         <a href={event.link} className="event-link">Läs mer</a>
                     </div>
                 </div>
-
-            
-
         </div>
     )
 }

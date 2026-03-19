@@ -14,6 +14,8 @@
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 20px;
     padding:20px;
+    max-width:1600px;
+    margin:0 auto;
 }
 
 .home-page-filter{
@@ -22,11 +24,29 @@
     margin:0 auto;
 }
 
+.home-page-event-count{
+    color:black;
+    max-width:1600px;
+    text-align: start;
+    margin:0 auto;
+    padding:0px 20px 0px 20px;
+    font-size: 13px;
+}
+
+.home-page-event-count h2{
+    display:flex;
+    align-items: center;
+    gap:5px;
+    font-weight: normal;
+    color:rgb(88, 86, 83)
+}
+
 .home-page footer{
     width:100%;
     height:150px;
     border-top:1px solid rgba(0, 0, 0, 0.163);
     color:black;
+    margin-top:20px;
 }
 
 @media (max-width: 450px){

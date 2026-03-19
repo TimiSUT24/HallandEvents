@@ -1,3 +1,5 @@
+import "../css/error.messages.css";
+
 type ErrorProps = {
     messages?: string[];
 }

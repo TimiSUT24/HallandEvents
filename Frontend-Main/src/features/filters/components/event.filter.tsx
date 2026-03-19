@@ -1,4 +1,5 @@
 import type { EventFilters } from "../../events/types/event.filter"
+import {useState} from "react";
 import Select from 'react-select'
 import { CiSearch } from "react-icons/ci";
 import "../css/event.filter.css"
@@ -11,9 +12,14 @@ type Props={
 }
 export default function EventFilter({filter, onChange, categories, cities}: Props){
     
+    const [showAllCategories, setShowAllCategories] = useState(false);
+
     function update<K extends keyof EventFilters>(key: K, value: EventFilters[K]){
         onChange({...filter, [key]: value})
     }
+
+    const half = Math.ceil(categories.length / 2);
+    const displayedCategories = showAllCategories ? categories : categories.slice(0, half);
 
     const cityOptions = cities.map(c => ({
         label: c,
@@ -42,8 +48,6 @@ export default function EventFilter({filter, onChange, categories, cities}: Prop
                     styles={{placeholder: (base) => ({...base,color:"black"}) 
                     }}
                     />       
-                
-
             </div>
             
             <div className ="category-buttons">
@@ -53,7 +57,7 @@ export default function EventFilter({filter, onChange, categories, cities}: Prop
                     Alla
                 </button>
 
-                {categories.map(c => (
+                {displayedCategories.map(c => (
                     <button
                     key={c}
                     className={filter.category === c ? "active" : ""}
@@ -61,7 +65,16 @@ export default function EventFilter({filter, onChange, categories, cities}: Prop
                     {c}
                     </button>
                 ))}
-            </div>
+                {categories.length > half && (
+                    <button
+                        className="toggle-categories"
+                        onClick={() => setShowAllCategories(prev => !prev)}
+                        >
+                        {showAllCategories ? "Visa mindre" : "Visa mer"}
+                    </button>
+                )}
+            </div>  
+
         </div>
     )
 }

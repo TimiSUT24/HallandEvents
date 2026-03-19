@@ -1,0 +1,14 @@
+
+.error-container{
+    width: 100%;
+    text-align: center;
+}
+
+.error-container li{
+    list-style: none;
+    color:black;
+}
+
+.error-container ul{
+    padding:0;
+}
