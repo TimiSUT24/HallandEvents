@@ -57,15 +57,15 @@
     gap:2px;
 }
 
-.event-card-dates{
-    display:flex;
-    flex-direction: row;
-    gap:20px;
-}
-
 .event-card-dates p{
     display:flex;
+    flex-direction: row;
     gap:2px;
+}
+
+.event-date{
+    display:flex;
+    gap:8px;
 }
 
 .event-card-link a{

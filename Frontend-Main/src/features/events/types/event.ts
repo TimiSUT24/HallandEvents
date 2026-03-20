@@ -1,4 +1,5 @@
 export interface EventDate{
+    id: number;
     startDate?: string;
     endDate?: string;
     time: string;

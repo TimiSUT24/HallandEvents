@@ -10,8 +10,6 @@ type Props ={
 }
 
 export default function EventCard({event}: Props){
-    const startDate = event.dates?.[0];
-    const endDate = event.dates?.[1];
 
     return(
         <div className="event-card">
@@ -26,13 +24,21 @@ export default function EventCard({event}: Props){
                     </div>
                                     
                     <div className="event-card-location">
-                        <p className="event-card-location-p"><CiLocationOn/> {event.location}, {event.ort}</p>
+                        <p className="event-card-location-p"><CiLocationOn/> {event.location && `${event.location}, `}{event.ort}</p>
                         {event.attendance && <p className="event-card-attendance"><BsPeopleFill/> {event.attendance}</p>}
                     </div>
                     <div className="event-card-dates">
-                        {startDate?.startDate && <p><CiCalendar/> {startDate?.startDate}</p>}
-                        {endDate?.endDate && <p>{endDate?.endDate}</p>}
-                        {startDate?.time && <p><MdAccessTime/>{startDate.time}</p>}
+                        {event.dates.map((d) => (
+                            <div key={d.id} className="event-date">
+                                    {d.startDate && (
+                                        <p><CiCalendar/> {d.startDate}</p>
+                                        
+                                    )}
+                                    {d.time && (
+                                        <p><MdAccessTime/> {d.time}</p>
+                                    )}
+                            </div>
+                        ))}
                     </div>
                     <div className="event-card-link">
                         <a href={event.link} className="event-link">Läs mer</a>
