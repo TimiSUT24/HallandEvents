@@ -1,4 +1,5 @@
 ﻿using EventClassLibrary.Models;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace EventExtension.Repositories.Interfaces
 {
@@ -6,5 +7,7 @@ namespace EventExtension.Repositories.Interfaces
     {
           Task RemoveRange();       
           Task AddRangeAsyncEvents(IEnumerable<EventItem> entity);
+          Task<IDbContextTransaction> BeginTransactionAsync();
+          Task RemoveByCity(string city);
     }
 }

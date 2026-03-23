@@ -125,14 +125,35 @@ namespace EventExtension.Services
                 throw new ArgumentException("Empty event list.");
             }
 
-            await _eventRepository.RemoveRange();
-                     
-            var eventEntities = events.Select(e => e.MapEventItem()).ToList();
-            
-            await _eventRepository.AddRangeAsyncEvents(eventEntities);         
-            await _eventRepository.SaveChangesAsync();
+            var grouped = events.GroupBy(e => e.Ort);
 
-            _memoryCache.Set(cacheKey, events.ToList());
+            foreach(var group in grouped)
+            {
+                var city = group.Key;
+                var eventList = group.ToList();
+
+                await using var transaction = await _eventRepository.BeginTransactionAsync();
+
+                try
+                {
+                    await _eventRepository.RemoveByCity(city);
+
+                    var entites = eventList.Select(e => e.MapEventItem()).ToList();
+
+                    await _eventRepository.AddRangeAsyncEvents(entites);
+                    await _eventRepository.SaveChangesAsync();
+
+                    await transaction.CommitAsync();
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+
+                }
+            }
+
+            _memoryCache.Remove(cacheKey);
            
         }
       
