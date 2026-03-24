@@ -1,4 +1,5 @@
 import {useState, useEffect, useMemo} from "react";
+import {Link} from "react-router-dom";
 import type { Event } from "../types/event";
 import {eventService} from "../../../services/event.service";
 import EventCard from "../components/event.card";
@@ -8,6 +9,7 @@ import EventFilter from "../../filters/components/event.filter";
 import type {EventFilters} from "../types/event.filter";
 import PaginationControlled from "../components/pagination.controlled";
 import { CiCalendar } from "react-icons/ci";
+import { CiLocationOn } from "react-icons/ci";
 import "../css/home.page.css";
 
 export default function HomePage(){
@@ -68,7 +70,14 @@ export default function HomePage(){
 
     return(
         <div className="home-page">
-            <header> </header>
+            <header>
+                <img src="IMG/halland_events_header.jpg" alt="" className="header-img"/>
+                <div className="header-text">
+                    <h1>Halland Events</h1>
+                    <p>Upptäck konserter, utställningar, marknader och mer i hela Halland</p>
+                    <p><CiLocationOn style={{color:"white"}}/> Falkenberg · Varberg · Halmstad</p>
+                </div>
+            </header>
             <div className="home-page-filter">
                
                     <EventFilter 
@@ -90,7 +99,24 @@ export default function HomePage(){
             </div>
             {totalPages > 1 && (<PaginationControlled page={page} totalPages={totalPages} onChange={setPage}/>)}
             {errors.length > 0 && <ErrorMessages messages={errors}/>}
-            <footer>Halland Events</footer>
+            <footer>
+                <div className="footer-div">
+                    <h2>Halland Events</h2>
+                    <div className="footer-content">
+                        <div className="footer-contact">
+                            <p>E-post: halland.events@gmail.com</p>
+                        </div>
+                        <div className="footer-links">
+                            <Link to="/about">
+                                <p>Om webbplatsen</p>
+                            </Link>
+                            
+                        </div>
+                    </div>
+                    
+                </div>
+               
+            </footer>
         </div>
     )
 }
