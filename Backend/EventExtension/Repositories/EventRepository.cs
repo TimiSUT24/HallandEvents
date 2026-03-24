@@ -2,6 +2,7 @@
 using EventExtension.Data;
 using EventExtension.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Linq.Expressions;
 
 namespace EventExtension.Repositories
@@ -65,6 +66,19 @@ namespace EventExtension.Repositories
         public async Task AddRangeAsyncEvents(IEnumerable<EventItem> entity)
         {
             await _context.Events.AddRangeAsync(entity);          
+        }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        {
+            return await _context.Database.BeginTransactionAsync();
+        }
+
+        public async Task RemoveByCity(string city)
+        {
+            var events = _context.Events.Where(e => e.Ort == city);
+            _context.Events.RemoveRange(events);
+
+            await _context.SaveChangesAsync();
         }
     }
 }

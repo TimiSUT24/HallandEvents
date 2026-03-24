@@ -77,8 +77,9 @@ namespace EventExtension
                 options.AddPolicy("AllowedFrontend", policy =>
                 {
                     policy.WithOrigins(allowedOrigins!)
-                    .WithMethods("GET", "POST", "PUT", "DELETE")
-                    .WithHeaders("X-API-KEY", "Content-Type");
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
 
                 });
             });       
@@ -91,7 +92,7 @@ namespace EventExtension
                 app.Urls.Add($"http://*:{port}");
             }
     
-            app.UseCors();
+            app.UseCors("AllowedFrontend");
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
