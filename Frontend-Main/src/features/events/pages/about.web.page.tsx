@@ -1,4 +1,5 @@
 import {Link} from "react-router-dom";
+import { MdArrowBack } from "react-icons/md";
 import "../css/about.web.page.css";
 
 export default function AboutWebPage(){
@@ -9,7 +10,7 @@ export default function AboutWebPage(){
 
             </div>
             <div className="about-web-page-links">
-                <Link to="/">{"< Tillbaka till startsidan"}</Link>
+                <Link to="/"><p><MdArrowBack/> Tillbaka till startsidan</p></Link>
             </div>
             <header>
                 <h1>Om webbplatsen</h1>
