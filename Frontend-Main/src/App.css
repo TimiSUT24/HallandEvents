@@ -2,3 +2,9 @@
   margin: 0 auto;
   text-align: center;
 }
+html, body, #root{
+    background-color: hsl(210 20% 96%);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
