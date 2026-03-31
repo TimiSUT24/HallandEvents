@@ -107,7 +107,7 @@ export default function HomePage(){
                             <p>E-post: halland.events@gmail.com</p>
                         </div>
                         <div className="footer-links">
-                            <Link to="/about">
+                            <Link to="/about-web-page">
                                 <p>Om webbplatsen</p>
                             </Link>
                             

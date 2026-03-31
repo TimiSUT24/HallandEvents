@@ -25,7 +25,6 @@ export default function EventCard({event}: Props){
                                     
                     <div className="event-card-location">
                         <p className="event-card-location-p"><CiLocationOn/> {event.location && `${event.location}, `}{event.ort}</p>
-                        {event.attendance && <p className="event-card-attendance"><BsPeopleFill/> {event.attendance}</p>}
                     </div>
                     <div className="event-card-dates">
                         {event.dates.map((d) => (

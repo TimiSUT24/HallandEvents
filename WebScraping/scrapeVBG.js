@@ -1,34 +1,12 @@
 const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
+const {normalizeCategories} = require('./helpers/normalize.categories');
 const varbergUrl = 'https://visitvarberg.se/evenemang';
 
-//Categories
-const categories = ['Julmusik', 'Teater och humor', 'Djur och natur', 'Jul', 'Kultur, konst och utställningar', 'Festival och mässa', 'Loppis och marknader', 
-'Mat och dryck', 'Världsarvet Grimeton', 'Guidade visningar', 'Barn och familj', 'Föreläsning', 'Musik och shower', 'Parkmusiken', 'Sport och motion', 'Sommarlov', 'Wallstreet konstfestival'];
-
-const categoryMap = {
-'Julmusik': 'Jul',
-'Teater och humor': 'Teater', 
-'Djur och natur': 'Natur',
-'Jul': 'Jul',
-'Kultur, konst och utställningar': 'Konst',
-'Festival och mässa': 'Nöje',
-'Loppis och marknader': 'Marknad',
-'Mat och dryck': 'Mat',
-'Världsarvet Grimeton': 'Historia',
-'Guidade visningar': 'Guidad tur',
-'Barn och familj': 'Barn',
-'Föreläsning': 'Föreläsning',
-'Musik och shower': 'Musik',
-'Parkmusiken': 'Musik',
-'Sport och motion': 'Sport',
-'Sommarlov': 'Sommarlov',
-'Wallstreet konstfestival': 'Konst'
-};
 
 (async () => {
-    const browser = await chromium.launch({ headless: true, slowMo: 100 });
+    const browser = await chromium.launch({ headless: false, slowMo: 100 });
     const page = await browser.newPage();
 
     async function gotoWithRetry(page,url,retries = 3){
@@ -54,7 +32,26 @@ const categoryMap = {
         console.log('⚠️ Cookie banner not found or already accepted.');
     }
 
-    // Scroll to trigger lazy loading
+        async function getCategories(page) {
+            const buttons = page.locator(
+                'ul.vve-event-filters__categories-list li button.vve-event-filters__category'
+            );
+
+            const count = await buttons.count();
+            const categories = [];
+
+            for (let i = 0; i < count; i++) {
+                const text = await buttons.nth(i).innerText();
+                const category = text.trim();
+
+                if (category) {
+                    categories.push(category);
+                }
+            }
+
+            return categories;
+        }
+
 
     async function extractEvents(page){   
     
@@ -98,19 +95,20 @@ const categoryMap = {
         return false;
     }
 
+    const categories = await getCategories(page);
     const eventMap = new Map();
 
     for (const category of categories){
         
-        const mappedCategory = categoryMap[category];
-        if (!mappedCategory) {
+        const mappedCategories = normalizeCategories(category, 'vbg');
+        if (!mappedCategories) {
             console.log(`⚠️ Skipping unknown category "${category}"`);
             continue;
         }
-    console.log(`🔍 Selecting Varberg category "${category}" → Frontend category "${mappedCategory}"`);
+    console.log(`🔍 Selecting Varberg category "${category}" → Frontend category "${mappedCategories}"`);
         
     //remove previous selected category to prevent duplicates
-    const removeButtons = await page.locator('button[class^="vve-event-filters__category selected-category"]');
+    const removeButtons = page.locator('button[class^="vve-event-filters__category selected-category"]');
     const removeCount = await removeButtons.count();
 
     for (let i = 0; i < removeCount; i++) {
@@ -151,7 +149,7 @@ await clickCategory.click();
 
         //Add category to each event
         const categorizedEvents = events.map(e => ({ ...e }));
-        const eventKey = (event) => `${event.title}-${event.date}-${event.location}`;
+        const eventKey = (event) => `${event.title}-${event.dates[0].startDate}-${event.location}`;
 
         // Use a Set to track unique keys      
         for (const event of categorizedEvents) {
@@ -160,14 +158,18 @@ await clickCategory.click();
         if (eventMap.has(key)) {
             // Already exists: push this category if not already present
             const existing = eventMap.get(key);
-            if (!existing.categories.includes(mappedCategory)) {
-                existing.categories.push(mappedCategory);
+            
+            for(const mappedCategory of mappedCategories){
+                if (!existing.categories.includes(mappedCategory)) {
+                    existing.categories.push(mappedCategory);
+                }
             }
+            
         } else {
             // New event: add with category as array
             eventMap.set(key, {
                 ...event,
-                categories: [mappedCategory]
+                categories: [...mappedCategories]
             });
         }
     }
