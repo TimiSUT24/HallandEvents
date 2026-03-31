@@ -171,7 +171,7 @@ const falkenbergUrl ='https://falkenberg.se/evenemang';
                     // New event: add with category as array
                     eventMap.set(key, {
                         ...event,
-                        categories: [mappedCategories]
+                        categories: [...mappedCategories]
                     });
                 }
             }
