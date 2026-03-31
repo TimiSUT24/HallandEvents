@@ -1,6 +1,7 @@
 const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
+const {normalizeCategories} = require('./helpers/normalize.categories');
 const falkenbergUrl ='https://falkenberg.se/evenemang';
 
 (async () => {
@@ -51,7 +52,7 @@ const falkenbergUrl ='https://falkenberg.se/evenemang';
         await scrollToLoadAll(page);       
     
     // Extract events
-    const events = await page.$$eval('article.event-card', cards => {
+    const events = await page.$$eval('#events-container > a', cards => {
 
         const months = {
             jan: '01', januari: '01',
@@ -73,7 +74,7 @@ const falkenbergUrl ='https://falkenberg.se/evenemang';
             const dateContainer = card.querySelector('div[class^="event-date-section"]');
             const monthText = dateContainer?.querySelector('div[class*="date-month"]')?.innerText.trim().toLowerCase();
             const dayText = dateContainer?.querySelector('div[class*="date-day"]')?.innerText.trim().padStart(2, '0');
-            const link = card.querySelector('a')?.href; 
+            const link = card.href; 
             const description = card.querySelector('div[class^="event-excerpt"]')?.innerText.trim();
 
             const normalizedMonth = monthText?.replace('.', '') || '';
@@ -83,11 +84,27 @@ const falkenbergUrl ='https://falkenberg.se/evenemang';
             const startDate = `${year}-${month}-${day}`;
 
 
-            const location = card.querySelector('div[class^="event-time-location"]')?.innerText.trim();
+            const rawLocation = card.querySelector('div[class^="event-time-location"]')?.innerText.trim();
+            const parts = rawLocation.split(" - ")
+            let time = "";
+            let location = "";
+
+            if(parts.length >= 3){
+                time = `${parts[0]} - ${parts[1]}`;
+                location = parts.slice(2).join(" - ");
+            } else if (parts.length === 2) {
+                    time = parts[0];
+                    location = parts[1];
+                } else {
+                    location = rawLocation;
+                }
+
+                location = location.replace(/\bFalkenberg\b/g, '').trim();
+                location = location.replace(/(^,)|(,$)/g, '').trim();
 
             const img = card.querySelector('img')?.src;
             const ort = 'Falkenberg'
-            return { title,startDate, link, description, location, img, ort};
+            return { title,dates:[{startDate, time}], link, description, location, img, ort};
         });
     });
 
@@ -99,7 +116,7 @@ const falkenbergUrl ='https://falkenberg.se/evenemang';
     const count = await buttons.count();
 
     const categoryNames = [];
-    for (let i = 0; i < 2; i++){
+    for (let i = 0; i < count; i++){
         const btnText = await buttons.nth(i).evaluate(btn => {
             const clone = btn.cloneNode(true);
             clone.querySelectorAll('span').forEach(s => s.remove());
@@ -111,9 +128,16 @@ const falkenbergUrl ='https://falkenberg.se/evenemang';
         }
     }
 
+
     const eventMap = new Map();
 
-    for (const category of categoryNames){            
+    for (const category of categoryNames){         
+        
+        const mappedCategories = normalizeCategories(category, 'fbg');
+        if (!mappedCategories) {
+            console.log(`⚠️ Skipping unknown category "${category}"`);
+            continue;
+        }
         console.log(`Selecting category ${category}`)
         
         const targetButton = filterContainer.locator("button.tag-filter-btn", {hasText: category}).first();
@@ -138,14 +162,16 @@ const falkenbergUrl ='https://falkenberg.se/evenemang';
                 if (eventMap.has(key)) {
                     // Already exists: push this category if not already present
                     const existing = eventMap.get(key);
-                    if (!existing.categories.includes(category)) {
-                        existing.categories.push(category);
-                    }
+                    for(const mappedCategory of mappedCategories){
+                        if (!existing.categories.includes(mappedCategory)) {
+                            existing.categories.push(mappedCategory);
+                        }
+                    }                 
                 } else {
                     // New event: add with category as array
                     eventMap.set(key, {
                         ...event,
-                        categories: [category]
+                        categories: [mappedCategories]
                     });
                 }
             }

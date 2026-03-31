@@ -1,34 +1,8 @@
 const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
-
+const {normalizeCategories} = require('./helpers/normalize.categories');
 const halmstadUrl = 'https://www.destinationhalmstad.se/evenemang';
-
-const categoryMap = {
-'Konst och utställning': ['Konst', 'Utställning'],
-'Skapa och pyssla': ['Barn', 'Spel'],
-'Kultur och historia': ['Historia'],
-'Digitalt och teknik': ['Spel'],
-'Festival och mässa': ['Nöje'],
-'Mat och dryck': ['Mat', 'Restaurang'],
-'Trädgård, mode och inredning': ['Utomhus'],
-'Paket': ['Nöje'],
-'Guidade turer och föreläsningar': ['Guidad tur', 'Föreläsning'],
-'Barn och familj': ['Barn'],
-'Litteratur och film': ['Föreläsning', 'Bio'],
-'Marknad och loppis': ['Marknad'],
-'Musik och konsert': ['Musik'],
-'Natur, friluftsliv och cykel': ['Natur', 'Utomhus'],
-'Spela spel och umgås': ['Spel'],
-'Skollov': ['Sommarlov'],
-'Jul och högtider': ['Jul'],
-'Show och gala': ['Nöje'],
-'Sport och hälsa': ['Sport'],
-'Humor och standup': ['Humor'],
-'Teater och dans': ['Teater', 'Dans'],
-'Workshops och prova på': ['Föreläsning', 'Tävling']
-};
-
 
 (async () => {
     const browser = await chromium.launch({ headless: true, slowMo: 100 });
@@ -253,11 +227,10 @@ const categoryMap = {
 
     for (const cat of categoryInputs) {
         const category = cat.name;
-        const mappedCategory = categoryMap[category];
-
-        if (!mappedCategory) {
-        console.log(`Skipping unknown category "${category}"`);
-        continue;
+        const mappedCategories = normalizeCategories(category, 'vbg');
+        if (!mappedCategories) {
+            console.log(`⚠️ Skipping unknown category "${category}"`);
+            continue;
         }
 
         console.log(`🔍 Scraping category "${category}"`);
@@ -282,15 +255,15 @@ const categoryMap = {
             if (eventMap.has(key)) {
             const existing = eventMap.get(key);
 
-            for (const c of mappedCategory) {
-                if (!existing.categories.includes(c)) {
-                existing.categories.push(c);
+            for (const mappedCategory of mappedCategories) {
+                if (!existing.categories.includes(mappedCategory)) {
+                existing.categories.push(mappedCategory);
                 }
             }
             } else {
             eventMap.set(key, {
                 ...event,
-                categories: [...mappedCategory],
+                categories: [...mappedCategories],
             });
             }
         }
