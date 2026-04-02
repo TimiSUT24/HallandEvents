@@ -2,6 +2,7 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 const {normalizeCategories} = require('./helpers/normalize.categories');
+const {mapEvents} = require('./helpers/event.mapper');
 const varbergUrl = 'https://visitvarberg.se/evenemang';
 
 
@@ -147,32 +148,8 @@ await clickCategory.click();
         console.log(`Scraping page ${currentPage}`);
         const events = await extractEvents(page);     
 
-        //Add category to each event
-        const categorizedEvents = events.map(e => ({ ...e }));
         const eventKey = (event) => `${event.title}-${event.dates[0].startDate}-${event.location}`;
-
-        // Use a Set to track unique keys      
-        for (const event of categorizedEvents) {
-        const key = eventKey(event);
-
-        if (eventMap.has(key)) {
-            // Already exists: push this category if not already present
-            const existing = eventMap.get(key);
-            
-            for(const mappedCategory of mappedCategories){
-                if (!existing.categories.includes(mappedCategory)) {
-                    existing.categories.push(mappedCategory);
-                }
-            }
-            
-        } else {
-            // New event: add with category as array
-            eventMap.set(key, {
-                ...event,
-                categories: [...mappedCategories]
-            });
-        }
-    }
+        mapEvents(eventMap, events, mappedCategories, eventKey);
 
         const found = await scrollToLoadMoreButton(page);
         if (!found){break;} 
@@ -188,7 +165,7 @@ await clickCategory.click();
     console.log(allEvents);
     const filePath = path.join(__dirname, 'eventsVBG.json');
     fs.writeFileSync(filePath, JSON.stringify(allEvents, null, 2), 'utf-8');
-    console.log('📝 Events saved to eventsVBG.json');
+    console.log(`📝 ${allEvents.length} Events saved to eventsVBG.json`);
 
     await browser.close();
 })();
