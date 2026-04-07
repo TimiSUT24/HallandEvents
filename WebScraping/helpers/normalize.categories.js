@@ -108,6 +108,24 @@ function normalizeCategories(rawCategory, source){
             'Teater, dans' : [stMaps.Teater, stMaps.Dans],
             'Sport, motion': [stMaps.Sport],
             'Övrigt': [stMaps.Övrigt]
+        },
+        kgb: {
+            'Barn och familj' : [stMaps.Barn],
+            'Dans' : [stMaps.Dans],
+            'Djur och natur' : [stMaps.Natur],
+            'Festival och mässa' : [stMaps.Nöje],
+            'Film och bio' : [stMaps.Nöje],
+            'Humor och standup' : [stMaps.Humor],
+            'Konst och uställning' : [stMaps.Konst, stMaps.Utställning],
+            'Litteratur och föreläsning' : [stMaps.Föreläsning],
+            'Mat och dryck' : [stMaps.Mat],
+            'Musk och konsert' : [stMaps.Musik, stMaps.Nöje],
+            'Show och gala' : [stMaps.Nöje],
+            'Skollov' : [stMaps.Lov_Högtider],
+            'Sport och motion' : [stMaps.Sport],
+            'Teater och musikal' : [stMaps.Teater, stMaps.Musik],
+            'Workshops och prova på' : [stMaps.Utställning, stMaps.Sport]
+
         }
     };
     const sourceMap = maps[source];
