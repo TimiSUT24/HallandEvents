@@ -7,7 +7,7 @@ const laholmUrl = 'https://visitlaholm.se/evenemang/evenemangskalender';
 const apiMoreBase = 'https://visitlaholm.se/appresource/4.58e0ed1f18bfae8ae2b2cfa1/12.6e8488f818ecba3c53325ad2/more';
 
 (async () => {
-        const browser = await chromium.launch({ headless: false, slowMo: 100 });
+        const browser = await chromium.launch({ headless: true, slowMo: 100 });
         const page = await browser.newPage();
     
         async function gotoWithRetry(page,url,retries = 3){
@@ -111,11 +111,11 @@ const apiMoreBase = 'https://visitlaholm.se/appresource/4.58e0ed1f18bfae8ae2b2cf
                     ort: 'Laholm',
                     location: article.place || '',
                     dates: [
-                    {
-                        startDate: article.startDate || null,
-                        endDate: article.endDate || null,
-                        time: buildTime(article.startTime, article.endTime)
-                    }
+                        {
+                            startDate: article.startDate ? article.startDate.split('T')[0] : "",
+                            endDate: article.endDate ? article.endDate.split('T')[0] : "",
+                            time: buildTime(article.startTime, article.endTime) || ""
+                        }
                     ]
                 }));
 
