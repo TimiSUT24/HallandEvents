@@ -406,3 +406,4 @@ dist.pem
 /WebScraping/allEvents.json
 /Backend/EventExtension/appsettings.json
 /WebScraping/eventsLHM.json
+/WebScraping/eventsKGB.json
