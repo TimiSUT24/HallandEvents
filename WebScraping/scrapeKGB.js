@@ -53,10 +53,9 @@ const kgbCategories = 'https://kungsbacka.se/uppleva-och-gora/evenemang';
             return "";   
         }
 
-        async function getCategories(page){
+            async function getCategories(page){
 
                 await page.locator(".lp-filterable-list-control-group--button", {hasText: "Kategori"}).click();
-
 
                 const responsePromise = page.waitForResponse(response =>
                     response.url().includes("svAjaxReqParam=ajax")
@@ -72,45 +71,94 @@ const kgbCategories = 'https://kungsbacka.se/uppleva-och-gora/evenemang';
                 await page.locator('.lp-filterable-list-control').filter({hasText: "Barn och familj"}).locator('label span').click();
 
                 return categories;
+            }
 
-        }
+            async function getLocations(page,data){
+
+                const tempContext = await browser.newContext();
+                const tempPage = await tempContext.newPage();
+
+                await tempPage.setContent(data.listHtml || "");
+                const htmlLocationMap = new Map();
+
+                const cards = tempPage.locator(".lp-filterable-list-item");
+                const count = await cards.count();
+
+                for (let i = 0; i < count; i++) {
+                    const card = cards.nth(i);
+
+                    const name = (await card.locator(".lp-filterable-list-item-content__heading a").textContent())?.trim();
+                    const location = (
+                        await card.locator(".lp-filterable-list-item-location").textContent()
+                    )?.trim();
+
+                    if (name) htmlLocationMap.set(name, location || "");
+                }
+                await page.waitForTimeout(2000);
+                await tempContext.close();
+                return htmlLocationMap;
+            }
+
+            function mapKungsbackaEvents(items, htmlLocationMap, formatDate) {
+                return items.map(item => {
+                    const cleanName = item?.name?.replace(/&amp;/g, "&")?.trim() ?? "";
+
+                    return {
+                        name: cleanName,
+                        link: item?.link ? `https://kungsbacka.se${item.link}`: "",
+                        img: item?.image?.url ? `https://kungsbacka.se${item.image.url}`: "",
+                        ort: "Kungsbacka",
+                        dates: [
+                            {
+                                startDate: item?.date?.startDate?.screenreader ?? "",
+                                endDate: item?.date?.endDate?.screenreader ?? "",
+                                time: formatDate(item?.date?.startDate, item?.date?.endDate)
+                            }
+                        ],
+                        location: (htmlLocationMap.get(cleanName) || "").replace(/\u00A0/g, " ").replace(/\s+/g, " ").trim()
+                    };
+                });
+            }
+
         const categories = await getCategories(page);
         const eventMap = new Map();
         console.log(categories);
-        
-        for(const category of categories){
+
+                const AJAX_FILTER = res =>
+            res.url().includes("svAjaxReqParam=ajax") &&
+            res.url().includes("category_419fc51e-bd32-4c73-9f34-fb26456ece43");
+
+        async function safeWaitResponse(page, timeout = 8000) {
+            return await Promise.race([
+                page.waitForResponse(AJAX_FILTER),
+                new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error("timeout")), timeout)
+                )
+            ]);
+        }
+    
+       for(const category of categories){
             console.log(`🔍 Scraping category "${category.value}"`);
 
             const categoryResponsePromise = page.waitForResponse(res =>
                 res.url().includes("svAjaxReqParam=ajax") &&
                 res.url().includes("category_419fc51e-bd32-4c73-9f34-fb26456ece43")
-            );           
-            await page.locator('.lp-filterable-list-control').filter({hasText: category.value}).locator('label span').click();
+            );    
+            await page.locator('.lp-filterable-list-control').filter({hasText: category.value}).locator('label span').click();    
 
             let response = await categoryResponsePromise;
             let data = await response.json();
 
+            const htmlLocationMap = await getLocations(page,data);
+            console.log(htmlLocationMap);
+
             let items = data.items || [];
             const mappedCategories = normalizeCategories(category.value, 'kgb');
             
-            const event = items.map(item => ({
-                name: item?.name ?? "",
-                link: item?.link ? `https://kungsbacka.se${item.link}` : "",
-                img:  item?.image?.url ? `https://kungsbacka.se${item.image.url}` : "",
-                ort: 'Kungsbacka',
-                dates: [
-                    {
-                        startDate: item.date.startDate.screenreader ?? "",
-                        endDate: item.date.endDate.screenreader ?? "",
-                        time: formatDate(item?.date?.startDate, item?.date?.endDate)
-                    }
-                ]
-
-            }));
+            const event = mapKungsbackaEvents(items,htmlLocationMap,formatDate)
             console.log(event);
 
-
-            const eventKey = (event) => `${event.name}-${event.dates[0].startDate}`;
+            const eventKey = (event) => `${event.link}-${event.dates[0].startDate}`;
             mapEvents(eventMap,event,mappedCategories, eventKey);
 
             while(true){
@@ -119,40 +167,27 @@ const kgbCategories = 'https://kungsbacka.se/uppleva-och-gora/evenemang';
                 if (!(await nextButton.isVisible())) break;
                 if (!(await nextButton.isEnabled())) break;
 
+                await nextButton.click();
+
                 const nextResponsePromise = page.waitForResponse(res =>
                     res.url().includes("svAjaxReqParam=ajax") &&
                     res.url().includes("category_419fc51e-bd32-4c73-9f34-fb26456ece43")
                 );
 
-                await nextButton.click();
 
                 response = await nextResponsePromise;
                 data = await response.json();
-
+                const htmlLocationMap = await getLocations(page,data);
+                console.log(htmlLocationMap);
                 items = data.items || [];
-                
-                const event = items.map(item => ({
-                    name: item?.name ?? "",
-                    link: item?.link ? `https://kungsbacka.se${item.link}` : "",
-                    img:  item?.image?.url ? `https://kungsbacka.se${item.image.url}` : "",
-                    ort: 'Kungsbacka',
-                    dates: [
-                        {
-                            startDate: item.date.startDate.screenreader ?? "",
-                            endDate: item.date.endDate.screenreader ?? "",
-                            time: formatDate(item?.date?.startDate, item?.date?.endDate) 
-                        }
-                    ]
 
-                }));
+                const event = mapKungsbackaEvents(items,htmlLocationMap,formatDate)
                 console.log(event);
 
-                const eventKey = (event) => `${event.name}-${event.dates[0].startDate}`;
-                mapEvents(eventMap,event,mappedCategories, eventKey);
-                
+                mapEvents(eventMap,event,mappedCategories, eventKey);          
             }  
             
-            await page.waitForTimeout(2000);
+            await page.waitForTimeout(1000);
             await page.locator('.lp-filterable-list-control').filter({hasText: category.value}).locator('label span').click();       
         }
 

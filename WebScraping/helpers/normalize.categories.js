@@ -116,16 +116,15 @@ function normalizeCategories(rawCategory, source){
             'Festival och mässa' : [stMaps.Nöje],
             'Film och bio' : [stMaps.Nöje],
             'Humor och standup' : [stMaps.Humor],
-            'Konst och uställning' : [stMaps.Konst, stMaps.Utställning],
+            'Konst och utställning' : [stMaps.Konst, stMaps.Utställning],
             'Litteratur och föreläsning' : [stMaps.Föreläsning],
             'Mat och dryck' : [stMaps.Mat],
-            'Musk och konsert' : [stMaps.Musik, stMaps.Nöje],
+            'Musik och konsert' : [stMaps.Musik, stMaps.Nöje],
             'Show och gala' : [stMaps.Nöje],
             'Skollov' : [stMaps.Lov_Högtider],
             'Sport och motion' : [stMaps.Sport],
             'Teater och musikal' : [stMaps.Teater, stMaps.Musik],
             'Workshops och prova på' : [stMaps.Utställning, stMaps.Sport]
-
         }
     };
     const sourceMap = maps[source];
