@@ -1,8 +1,8 @@
 import type { Event } from "../types/event";
 import { CiLocationOn } from "react-icons/ci";
-import { BsPeopleFill } from "react-icons/bs";
 import { CiCalendar } from "react-icons/ci";
 import { MdAccessTime } from "react-icons/md";
+import { FaCalendarAlt } from "react-icons/fa";
 import "../css/event.card.css";
 
 type Props ={
@@ -10,17 +10,28 @@ type Props ={
 }
 
 export default function EventCard({event}: Props){
-
+    const fallback = "/IMG/calendar.png";
     return(
         <div className="event-card">
             <div className="event-card-image">
-                <img src={event.img} alt={event.title}/>
+                <img
+                    src={event.img ? event.img : fallback}
+                    alt={event.title}
+                    onError={(e) => {
+                        const img = e.currentTarget;
+
+                        if (img.dataset.fallback) return;
+
+                        img.dataset.fallback = "true";
+                        img.src = fallback;
+                    }}
+                    />
             </div>
 
                 <div className="event-card-body">
                     <div className="event-card-body-content">
                         <h1>{event.title}</h1>
-                        <p>{event.description && (<p className ="event-description">{event.description.length > 250 ?`${event.description.slice(0,250)}...` : event.description}</p>)} </p>
+                        <p className="event-description">{event.description && (<span>{event.description.length > 250 ?`${event.description.slice(0,250)}...` : event.description}</span>)} </p>
                     </div>
                                     
                     <div className="event-card-location">

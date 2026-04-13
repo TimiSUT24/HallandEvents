@@ -4,9 +4,8 @@ const path = require('path');
 const {normalizeCategories} = require('./helpers/normalize.categories');
 const {mapEvents} = require('./helpers/event.mapper');
 const kgbCategories = 'https://kungsbacka.se/uppleva-och-gora/evenemang';
-(async () => {
-    
-        const browser = await chromium.launch({ headless: false, slowMo: 100 });
+async function runScraper(){
+    const browser = await chromium.launch({ headless: false, slowMo: 100 });
             const page = await browser.newPage();
         
             async function gotoWithRetry(page,url,retries = 3){
@@ -104,7 +103,7 @@ const kgbCategories = 'https://kungsbacka.se/uppleva-och-gora/evenemang';
                     const cleanName = item?.name?.replace(/&amp;/g, "&")?.trim() ?? "";
 
                     return {
-                        name: cleanName,
+                        title: cleanName,
                         link: item?.link ? `https://kungsbacka.se${item.link}`: "",
                         img: item?.image?.url ? `https://kungsbacka.se${item.image.url}`: "",
                         ort: "Kungsbacka",
@@ -128,8 +127,8 @@ const kgbCategories = 'https://kungsbacka.se/uppleva-och-gora/evenemang';
             res.url().includes("svAjaxReqParam=ajax") &&
             res.url().includes("category_419fc51e-bd32-4c73-9f34-fb26456ece43");
 
-        async function safeWaitResponse(page, timeout = 8000) {
-            return await Promise.race([
+            function safeWaitResponse(page, timeout) {
+            return Promise.race([
                 page.waitForResponse(AJAX_FILTER),
                 new Promise((_, reject) =>
                     setTimeout(() => reject(new Error("timeout")), timeout)
@@ -139,15 +138,23 @@ const kgbCategories = 'https://kungsbacka.se/uppleva-och-gora/evenemang';
     
        for(const category of categories){
             console.log(`🔍 Scraping category "${category.value}"`);
-
-            const categoryResponsePromise = page.waitForResponse(res =>
-                res.url().includes("svAjaxReqParam=ajax") &&
-                res.url().includes("category_419fc51e-bd32-4c73-9f34-fb26456ece43")
-            );    
-            await page.locator('.lp-filterable-list-control').filter({hasText: category.value}).locator('label span').click();    
-
-            let response = await categoryResponsePromise;
-            let data = await response.json();
+            let data;
+            for(let attempt = 0; attempt < 3; attempt++){
+                try{
+                const waitResponse = safeWaitResponse(page,15000);  
+                await page.locator('.lp-filterable-list-control').filter({hasText: category.value}).locator('label span').click();               
+                let response = await waitResponse;
+                data = await response.json();
+                if(data?.items?.length > 0){
+                    break;
+                }
+                }catch(err){
+                    console.log(`Attempts: ${attempt + 1}`)
+                    await page.locator('.lp-filterable-list-control').filter({hasText: category.value}).locator('label span').click();
+                    continue;
+                }
+            }
+           
 
             const htmlLocationMap = await getLocations(page,data);
             console.log(htmlLocationMap);
@@ -156,7 +163,6 @@ const kgbCategories = 'https://kungsbacka.se/uppleva-och-gora/evenemang';
             const mappedCategories = normalizeCategories(category.value, 'kgb');
             
             const event = mapKungsbackaEvents(items,htmlLocationMap,formatDate)
-            console.log(event);
 
             const eventKey = (event) => `${event.link}-${event.dates[0].startDate}`;
             mapEvents(eventMap,event,mappedCategories, eventKey);
@@ -166,29 +172,24 @@ const kgbCategories = 'https://kungsbacka.se/uppleva-och-gora/evenemang';
                 
                 if (!(await nextButton.isVisible())) break;
                 if (!(await nextButton.isEnabled())) break;
+                    
+                    const waitResponse = safeWaitResponse(page,15000); 
+                    await nextButton.click();
 
-                await nextButton.click();
+                    response = await waitResponse;
+                    data = await response.json();
 
-                const nextResponsePromise = page.waitForResponse(res =>
-                    res.url().includes("svAjaxReqParam=ajax") &&
-                    res.url().includes("category_419fc51e-bd32-4c73-9f34-fb26456ece43")
-                );
-
-
-                response = await nextResponsePromise;
-                data = await response.json();
                 const htmlLocationMap = await getLocations(page,data);
                 console.log(htmlLocationMap);
                 items = data.items || [];
 
                 const event = mapKungsbackaEvents(items,htmlLocationMap,formatDate)
-                console.log(event);
 
                 mapEvents(eventMap,event,mappedCategories, eventKey);          
             }  
             
-            await page.waitForTimeout(1000);
-            await page.locator('.lp-filterable-list-control').filter({hasText: category.value}).locator('label span').click();       
+            await page.locator('.lp-filterable-list-control').filter({hasText: category.value}).locator('label span').click();
+            await page.waitForTimeout(2000);       
         }
 
             const allEvents = Array.from(eventMap.values());
@@ -196,4 +197,24 @@ const kgbCategories = 'https://kungsbacka.se/uppleva-och-gora/evenemang';
             fs.writeFileSync(filePath, JSON.stringify(allEvents, null, 2), 'utf-8');
             console.log(`📝 Saved ${allEvents.length} events to eventsKGB.json`);
             await browser.close();
-})();
+
+} 
+            (async () => {
+        const MAX_RETRIES = 6;
+
+        for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                console.log(`🚀 Run attempt ${attempt}`);
+                await runScraper();
+                console.log("✅ Success");
+                break;
+            } catch (err) {
+                console.log(`❌ Crash on attempt ${attempt}:`, err.message);
+
+                if (attempt === MAX_RETRIES) {
+                    console.log("❌ All retries failed");
+                    process.exit(1);
+                }
+            }
+        }
+    })();
