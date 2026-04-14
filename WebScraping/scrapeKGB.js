@@ -5,7 +5,7 @@ const {normalizeCategories} = require('./helpers/normalize.categories');
 const {mapEvents} = require('./helpers/event.mapper');
 const kgbCategories = 'https://kungsbacka.se/uppleva-och-gora/evenemang';
 async function runScraper(){
-    const browser = await chromium.launch({ headless: false, slowMo: 100 });
+    const browser = await chromium.launch({ headless: true, slowMo: 100 });
             const page = await browser.newPage();
         
             async function gotoWithRetry(page,url,retries = 3){
