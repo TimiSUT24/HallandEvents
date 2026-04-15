@@ -2,6 +2,7 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 const {normalizeCategories} = require('./helpers/normalize.categories');
+const {mapEvents} = require('./helpers/event.mapper');
 const halmstadUrl = 'https://www.destinationhalmstad.se/evenemang';
 
 (async () => {
@@ -247,26 +248,8 @@ const halmstadUrl = 'https://www.destinationhalmstad.se/evenemang';
 
         const events = await extractEvents(page);
 
-        const eventKey = (event) => `${event.title}-${event.location}`;
-
-        for (const event of events) {
-            const key = eventKey(event);
-
-            if (eventMap.has(key)) {
-            const existing = eventMap.get(key);
-
-            for (const mappedCategory of mappedCategories) {
-                if (!existing.categories.includes(mappedCategory)) {
-                existing.categories.push(mappedCategory);
-                }
-            }
-            } else {
-            eventMap.set(key, {
-                ...event,
-                categories: [...mappedCategories],
-            });
-            }
-        }
+        const eventKey = (event) => `${event.title}-${event.dates[0].startDate}-${event.location}`;
+        mapEvents(eventMap, events, mappedCategories, eventKey);
 
         const found = await scrollToLoadMoreButton(page);
         if (!found) {
@@ -288,7 +271,7 @@ const halmstadUrl = 'https://www.destinationhalmstad.se/evenemang';
         JSON.stringify(allEvents, null, 2),
         "utf-8",
     );
-    console.log("📝 Events saved to eventsHSTD.json");
+    console.log(`📝 ${allEvents.length} Events saved to eventsHSTD.json`);
 
     await browser.close();
 })();
