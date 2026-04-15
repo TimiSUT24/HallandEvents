@@ -40,6 +40,8 @@ useEffect(() => {
     "Falkenberg",
     "Varberg",
     "Halmstad",
+    "Laholm",
+    "Kungsbacka"
   ]
 
 
