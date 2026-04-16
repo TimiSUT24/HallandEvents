@@ -41,7 +41,8 @@ useEffect(() => {
     "Varberg",
     "Halmstad",
     "Laholm",
-    "Kungsbacka"
+    "Kungsbacka",
+    "Hylte"
   ]
 
 

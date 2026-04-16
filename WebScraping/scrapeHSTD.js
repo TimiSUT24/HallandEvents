@@ -228,7 +228,7 @@ const halmstadUrl = 'https://www.destinationhalmstad.se/evenemang';
 
     for (const cat of categoryInputs) {
         const category = cat.name;
-        const mappedCategories = normalizeCategories(category, 'vbg');
+        const mappedCategories = normalizeCategories(category, 'hstd');
         if (!mappedCategories) {
             console.log(`⚠️ Skipping unknown category "${category}"`);
             continue;

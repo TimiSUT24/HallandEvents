@@ -407,3 +407,4 @@ dist.pem
 /Backend/EventExtension/appsettings.json
 /WebScraping/eventsLHM.json
 /WebScraping/eventsKGB.json
+/WebScraping/eventsHLT.json
