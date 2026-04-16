@@ -125,6 +125,21 @@ function normalizeCategories(rawCategory, source){
             'Sport och motion' : [stMaps.Sport],
             'Teater och musikal' : [stMaps.Teater, stMaps.Musik],
             'Workshops och prova på' : [stMaps.Utställning, stMaps.Sport]
+        },
+        hlt: {
+            'Bio' : [stMaps.Nöje],
+            'Konsert' : [stMaps.Musik, stMaps.Nöje],
+            'Teater' : [stMaps.Teater],
+            'Marknad' : [stMaps.Marknad],
+            'Upplevelser' : [stMaps.Nöje],
+            'Barn' : [stMaps.Barn],
+            'Kulturfest' : [stMaps.Kultur],
+            'Psyklyftet' : [stMaps.Nöje],
+            'Midsommar' : [stMaps.Nöje],
+            'Påsklov' : [stMaps.Lov_Högtider],
+            'Kyrkor och samfund' : [stMaps.Historia],
+            'Föreläsning, seminar' : [stMaps.Föreläsning],
+            'Övrigt' : [stMaps.Övrigt],
         }
     };
     const sourceMap = maps[source];
