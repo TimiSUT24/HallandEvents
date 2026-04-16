@@ -19,6 +19,7 @@ jobs:
              - scrapeVBG.js 
              - scrapeLHM.js
              - scrapeKGB.js 
+             - scrapeHLT.js 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
