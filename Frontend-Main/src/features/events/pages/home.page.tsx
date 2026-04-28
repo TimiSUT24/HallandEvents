@@ -90,23 +90,28 @@ export default function HomePage(){
             <div className="home-page-event-count">
                 <h2><CiCalendar/> {filteredEvents.length} evenemang hittade</h2>
             </div>
-            <div className="events-grid">
+                 <div className="events-grid">
                 {paginatedEvents.map((e)=>{
                     return(
                         <EventCard key={e.id} event={e}/>
                     )
                 })}
-            </div>
+            </div>     
             {totalPages > 1 && (<PaginationControlled page={page} totalPages={totalPages} onChange={setPage}/>)}
             {errors.length > 0 && <ErrorMessages messages={errors}/>}
             <footer>
                 <div className="footer-div">
-                    <h2>Halland Events</h2>
                     <div className="footer-content">
+                        <div className="footer-h2">
+                            <h2>Halland Events</h2>
+                            <p>Upptäck konserter, utställningar, marknader och mer i hela Halland</p>
+                        </div>
                         <div className="footer-contact">
+                            <p>Kontakt</p>
                             <p>E-post: halland.events@gmail.com</p>
                         </div>
                         <div className="footer-links">
+                            <p>Snabblänkar</p>
                             <Link to="/about-web-page">
                                 <p>Om webbplatsen</p>
                             </Link>
