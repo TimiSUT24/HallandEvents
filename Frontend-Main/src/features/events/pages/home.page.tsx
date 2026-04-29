@@ -71,7 +71,8 @@ export default function HomePage(){
     return(
         <div className="home-page">
             <header>
-                <img src="IMG/halland_events_header.jpg" alt="" className="header-img"/>
+                <img src="IMG/istockphoto-1340212719-1024x1024.jpg" alt="" className="header-img"/>
+                <div className="header-overlay"></div>
                 <div className="header-text">
                     <h1>Halland Events</h1>
                     <p>Upptäck konserter, utställningar, marknader och mer i hela Halland</p>
