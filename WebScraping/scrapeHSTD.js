@@ -3,24 +3,12 @@ const fs = require('fs');
 const path = require('path');
 const {normalizeCategories} = require('./helpers/normalize.categories');
 const {mapEvents} = require('./helpers/event.mapper');
+const {gotoWithRetry} = require('./helpers/goto.page');
 const halmstadUrl = 'https://www.destinationhalmstad.se/evenemang';
 
 (async () => {
-    const browser = await chromium.launch({ headless: true, slowMo: 100 });
+    const browser = await chromium.launch({ headless: true});
     const page = await browser.newPage();
-
-    async function gotoWithRetry(page,url,retries = 3){
-        for(let i = 0; i < retries; i++){
-            try{
-                await page.goto(url, { waitUntil: 'domcontentloaded',timeout: 60000 });
-                return;
-            }catch(err){
-                console.log("Failed to load page", err.message);
-                if(i === retries - 1) throw err;
-                await page.waitForTimeout(3000);
-            }
-        }
-    }
     await gotoWithRetry(page,halmstadUrl);
 
     // ✅ Accept Cookiebot popup
@@ -110,7 +98,7 @@ const halmstadUrl = 'https://www.destinationhalmstad.se/evenemang';
 
             return cards.map((card) => {
             const title =
-                card.querySelector("h3")?.innerText?.trim() || "Okänd titel";
+                card.querySelector("h3")?.innerText?.trim() || "";
             let dates = [];
 
             // Get all li elements with lp-cruncho-event-date class (single or multiple dates)
@@ -125,7 +113,7 @@ const halmstadUrl = 'https://www.destinationhalmstad.se/evenemang';
 
             // Parse li elements
             for (const li of liDateElements) {
-                const text = li.innerText.trim();
+                const text = li?.innerText?.trim() || "";
                 if (!text) continue;
 
                 const dateObj = parseDateString(text);
@@ -134,7 +122,7 @@ const halmstadUrl = 'https://www.destinationhalmstad.se/evenemang';
 
             // Parse span elements with date ranges
             for (const span of spanDateElements) {
-                const text = span.innerText.trim();
+                const text = span?.innerText?.trim() || "";
                 if (!text) continue;
 
                 const dateObj = parseDateString(text);

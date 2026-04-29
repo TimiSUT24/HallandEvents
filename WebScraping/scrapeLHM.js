@@ -3,26 +3,14 @@ const fs = require('fs');
 const path = require('path');
 const {normalizeCategories} = require('./helpers/normalize.categories');
 const {mapEvents} = require('./helpers/event.mapper');
+const {gotoWithRetry} = require('./helpers/goto.page');
 const laholmUrl = 'https://visitlaholm.se/evenemang/evenemangskalender';
 const apiMoreBase = 'https://visitlaholm.se/appresource/4.58e0ed1f18bfae8ae2b2cfa1/12.6e8488f818ecba3c53325ad2/more';
 
 (async () => {
-        const browser = await chromium.launch({ headless: true, slowMo: 100 });
+        const browser = await chromium.launch({ headless: true});
         const page = await browser.newPage();
     
-        async function gotoWithRetry(page,url,retries = 3){
-            for(let i = 0; i < retries; i++){
-                try{
-                    await page.goto(url, { waitUntil: 'domcontentloaded',timeout: 60000 });
-                    return;
-                }catch(err){
-                    console.log("Failed to load page", err.message);
-                    if(i === retries - 1) throw err;
-                    await page.waitForTimeout(3000);
-                }
-            }
-        }
-
         await gotoWithRetry(page,laholmUrl);
 
         // ✅ Accept Cookiebot popup
@@ -104,17 +92,17 @@ const apiMoreBase = 'https://visitlaholm.se/appresource/4.58e0ed1f18bfae8ae2b2cf
             const mappedCategories = normalizeCategories(category, 'lhm');
 
                 const event = articles.map(article => ({
-                    title: article.title || '',
-                    description: article.content || '',
-                    img: getImageSrc(article.image),
-                    link: article.url ? `https://visitlaholm.se${article.url}` : '',
+                    title: article?.title || '',
+                    description: article?.content || '',
+                    img: getImageSrc(article?.image),
+                    link: article?.url ? `https://visitlaholm.se${article.url}` : '',
                     ort: 'Laholm',
-                    location: article.place || '',
+                    location: article?.place || '',
                     dates: [
                         {
-                            startDate: article.startDate ? article.startDate.split('T')[0] : "",
-                            endDate: article.endDate ? article.endDate.split('T')[0] : "",
-                            time: buildTime(article.startTime, article.endTime) || ""
+                            startDate: article?.startDate ? article?.startDate?.split('T')[0] : "",
+                            endDate: article?.endDate ? article?.endDate?.split('T')[0] : "",
+                            time: buildTime(article?.startTime, article?.endTime) || ""
                         }
                     ]
                 }));
