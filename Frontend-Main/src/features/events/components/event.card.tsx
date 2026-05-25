@@ -2,7 +2,6 @@ import type { Event } from "../types/event";
 import { CiLocationOn } from "react-icons/ci";
 import { CiCalendar } from "react-icons/ci";
 import { MdAccessTime } from "react-icons/md";
-import { FaCalendarAlt } from "react-icons/fa";
 import "../css/event.card.css";
 
 type Props ={
