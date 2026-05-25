@@ -108,10 +108,11 @@ const falkenbergUrl ='https://falkenberg.se/evenemang';
         const btnText = await buttons.nth(i).evaluate(btn => {
             const clone = btn.cloneNode(true);
             clone.querySelectorAll('span').forEach(s => s.remove());
-            return clone.textContent.trim();
+            return clone.textContent.trim() || "";
         })
 
-        if(btnText && btnText !== "Alla evenemang"){
+        if(btnText && btnText !== "Alla evenemang" && btnText !== null){
+            console.log(btnText);
             categoryNames.push(btnText);
         }
     }
