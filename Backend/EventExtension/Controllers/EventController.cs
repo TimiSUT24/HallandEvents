@@ -1,5 +1,5 @@
 
-using EventClassLibrary.DTO;
+using EventExtension.DTO;
 using EventClassLibrary.Models;
 using EventExtension.Data;
 using EventExtension.Services.Interfaces;

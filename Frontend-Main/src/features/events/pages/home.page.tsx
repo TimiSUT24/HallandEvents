@@ -71,7 +71,7 @@ export default function HomePage(){
     return(
         <div className="home-page">
             <header>
-                <img src="IMG/istockphoto-1340212719-1024x1024.jpg" alt="" className="header-img"/>
+                <img src="IMG/iStock-1340212719.jpg" alt="" className="header-img"/>
                 <div className="header-overlay"></div>
                 <div className="header-text">
                     <h1>Halland Events</h1>

@@ -172,3 +172,9 @@
         max-height:400px;
     }
 }
+
+@media (min-width:2100px){
+    .home-page{
+        zoom: 125%;
+    }
+}

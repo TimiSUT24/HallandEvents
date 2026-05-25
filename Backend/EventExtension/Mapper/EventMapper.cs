@@ -1,4 +1,4 @@
-﻿using EventClassLibrary.DTO;
+﻿using EventExtension.DTO;
 using EventClassLibrary.Models;
 
 namespace EventExtension.Mapper
