@@ -25,7 +25,7 @@ export default function AboutWebPage(){
                     <p>
                         Informationen hämtas automatiskt från offentliga källor. Därför kan viss information ibland vara ofullständig,
                         föråldrad eller innehålla mindre fel. för helt korrekt och uppdaterad information rekommenderas att du 
-                        besöker arrangörens eller kommunens offciella webbplats, kan enkelt göras genom att klicka på något av evenemangens kort
+                        besöker kommunens offciella webbplats, kan enkelt göras genom att klicka på något av evenemangens kort
                         där det står läs mer.
                     </p>
 

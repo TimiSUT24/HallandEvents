@@ -79,6 +79,8 @@ function normalizeCategories(rawCategory, source){
             'Påsklov': [stMaps.Lov_Högtider],
             'Sportlov': [stMaps.Lov_Högtider],
             'Skollov': [stMaps.Lov_Högtider],
+            'Sommarlov': [stMaps.Lov_Högtider],
+            'Jul': [stMaps.Lov_Högtider],
             'Humor': [stMaps.Humor],
             'Mat': [stMaps.Mat],
             'Restaurang': [stMaps.Mat],
@@ -93,6 +95,7 @@ function normalizeCategories(rawCategory, source){
             'Föreläsning': [stMaps.Föreläsning],
             'Guidad tur': [stMaps.Guidad_tur],            
             'Historia': [stMaps.Historia],
+            'Spel': [stMaps.Spel],
         },
         lhm: {
             'Utställning': [stMaps.Utställning],
@@ -143,8 +146,11 @@ function normalizeCategories(rawCategory, source){
         }
     };
     const sourceMap = maps[source];
-    if(!sourceMap) return [rawCategory];
-    return sourceMap[rawCategory] || [rawCategory];
+
+    if (!sourceMap) return [rawCategory];
+
+    return (sourceMap[rawCategory] || [rawCategory])
+        .filter(Boolean);
 }
 
 module.exports = {normalizeCategories};

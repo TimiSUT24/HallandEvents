@@ -3,26 +3,13 @@ const fs = require('fs');
 const path = require('path');
 const {normalizeCategories} = require('./helpers/normalize.categories');
 const {mapEvents} = require('./helpers/event.mapper');
+const {gotoWithRetry} = require('./helpers/goto.page');
 const falkenbergUrl ='https://falkenberg.se/evenemang';
 
 (async () => {
-    const browser = await chromium.launch({ headless: true, slowMo: 100 });
+    const browser = await chromium.launch({ headless: true});
     const page = await browser.newPage();
-
-    async function gotoWithRetry(page,url,retries = 3){
-        for(let i = 0; i < retries; i++){
-            try{
-                await page.goto(url, { waitUntil: 'domcontentloaded',timeout: 60000 });
-                return;
-            }catch(err){
-                console.log("Failed to load page", err.message);
-                if(i === retries - 1) throw err;
-                await page.waitForTimeout(3000);
-            }
-        }
-    }
     await gotoWithRetry(page,falkenbergUrl);
-
     
     // ✅ Accept Cookiebot popup
     try {
@@ -71,12 +58,12 @@ const falkenbergUrl ='https://falkenberg.se/evenemang';
         };
 
         return cards.map(card => {
-            const title = card.querySelector('h2')?.innerText.trim();
+            const title = card.querySelector('h2')?.innerText?.trim() || "";
             const dateContainer = card.querySelector('div[class^="event-date-section"]');
-            const monthText = dateContainer?.querySelector('div[class*="date-month"]')?.innerText.trim().toLowerCase();
-            const dayText = dateContainer?.querySelector('div[class*="date-day"]')?.innerText.trim().padStart(2, '0');
+            const monthText = dateContainer?.querySelector('div[class*="date-month"]')?.innerText?.trim()?.toLowerCase() || "";
+            const dayText = dateContainer?.querySelector('div[class*="date-day"]')?.innerText?.trim()?.padStart(2, '0') || "";
             const link = card.href; 
-            const description = card.querySelector('div[class^="event-excerpt"]')?.innerText.trim();
+            const description = card.querySelector('div[class^="event-excerpt"]')?.innerText?.trim() || "";
 
             const normalizedMonth = monthText?.replace('.', '') || '';
             const month = months[normalizedMonth] || '01';
@@ -85,8 +72,8 @@ const falkenbergUrl ='https://falkenberg.se/evenemang';
             const startDate = `${year}-${month}-${day}`;
 
 
-            const rawLocation = card.querySelector('div[class^="event-time-location"]')?.innerText.trim();
-            const parts = rawLocation.split(" - ")
+            const rawLocation = card.querySelector('div[class^="event-time-location"]')?.innerText?.trim() || "";
+            const parts = rawLocation.split(" - ") || ""
             let time = "";
             let location = "";
 
@@ -121,10 +108,11 @@ const falkenbergUrl ='https://falkenberg.se/evenemang';
         const btnText = await buttons.nth(i).evaluate(btn => {
             const clone = btn.cloneNode(true);
             clone.querySelectorAll('span').forEach(s => s.remove());
-            return clone.textContent.trim();
+            return clone.textContent.trim() || "";
         })
 
-        if(btnText && btnText !== "Alla evenemang"){
+        if(btnText && btnText !== "Alla evenemang" && btnText !== null){
+            console.log(btnText);
             categoryNames.push(btnText);
         }
     }

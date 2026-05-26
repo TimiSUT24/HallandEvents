@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EventClassLibrary.DTO
+namespace EventExtension.DTO
 {
     public class EventDatesDto
     {
