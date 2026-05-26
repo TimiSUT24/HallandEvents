@@ -73,7 +73,7 @@ const falkenbergUrl ='https://falkenberg.se/evenemang';
 
 
             const rawLocation = card.querySelector('div[class^="event-time-location"]')?.innerText?.trim() || "";
-            const parts = rawLocation.split(" - ")
+            const parts = rawLocation.split(" - ") || ""
             let time = "";
             let location = "";
 
