@@ -61,13 +61,14 @@ const falkenbergUrl ='https://falkenberg.se/evenemang';
             const title = card.querySelector('h2')?.innerText?.trim() || "";
             const dateContainer = card.querySelector('div[class^="event-date-section"]');
             const monthText = dateContainer?.querySelector('div[class*="date-month"]')?.innerText?.trim()?.toLowerCase() || "";
-            const dayText = dateContainer?.querySelector('div[class*="date-day"]')?.innerText?.trim()?.padStart(2, '0') || "";
+            const rawDay = dateContainer?.querySelector('div[class*="date-day"]')?.innerText?.trim() || "";
             const link = card.href; 
             const description = card.querySelector('div[class^="event-excerpt"]')?.innerText?.trim() || "";
+            const parsedDay = parseInt(rawDay, 10);
 
             const normalizedMonth = monthText?.replace('.', '') || '';
             const month = months[normalizedMonth] || '01';
-            const day = dayText?.padStart(2, '0') || '01';
+            const day = parsedDay >= 1 && parsedDay <= 31? String(parsedDay).padStart(2, '0'): '01';
             const year = new Date().getUTCFullYear();
             const startDate = `${year}-${month}-${day}`;
 
