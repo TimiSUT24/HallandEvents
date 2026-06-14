@@ -97,27 +97,6 @@ namespace EventExtension.Services
                 return new();
             }
         }
-
-        public async Task<IEnumerable<EventItemDto>> RemoveEventsRangeWithId(int id, int id2)
-        {
-            var events = await _eventRepository.FindAsync(e => e.Id >= id && e.Id <= id2);
-            if (events == null || !events.Any())
-            {
-                throw new Exception("No events found in the specified range.");
-            }
-            foreach (var eventItem in events)
-            {
-                await _eventRepository.DeleteAsync(eventItem);
-            }
-            await _eventRepository.SaveChangesAsync();
-            _memoryCache.Remove(cacheKey);
-            return events.Select(e => new EventItemDto
-            {
-                Id = e.Id,
-            });
-
-        }
-
         public async Task UploadEvents(IEnumerable<EventItemDto> events)
         {
             if (events == null || !events.Any())

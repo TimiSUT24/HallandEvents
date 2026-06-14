@@ -34,18 +34,6 @@ namespace EventExtension.Controllers
         {
              return Task.FromResult<IActionResult>(Ok("Pong"));
         }
-
-        [Authorize(Roles = "Admin")]
-        [HttpDelete("RemoveEventsRangeWithId/{id}/{id2}")]
-        public async Task<IActionResult> DeleteEventsWithinRange(int id, int id2)
-        {
-            var events = await _eventService.RemoveEventsRangeWithId(id, id2);
-            if(events == null)
-            {
-                return NotFound("No events found in the specified range.");
-            }
-            return Ok(events);
-        }
        
         [HttpPost("UploadEvents")]
         public async Task<IActionResult> UploadEvents([FromBody] List<EventItemDto> events)
