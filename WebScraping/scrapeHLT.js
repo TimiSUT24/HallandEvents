@@ -72,7 +72,7 @@ const eventSiteUrl = "https://kalender.hylte.se/events";
             }));
 
             const eventKey = event =>
-                `${event.link}-${event.dates[0].startDate}`;
+                `${event.title}-${event.dates[0].startDate}-${event.location}-${event.dates[0].time}`;
 
             mapEvents(eventMap, events, mappedCategories, eventKey);
 

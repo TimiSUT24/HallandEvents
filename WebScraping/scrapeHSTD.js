@@ -236,7 +236,7 @@ const halmstadUrl = 'https://www.destinationhalmstad.se/evenemang';
 
         const events = await extractEvents(page);
 
-        const eventKey = (event) => `${event.title}-${event.dates[0].startDate}-${event.location}`;
+        const eventKey = (event) => `${event.title}-${event.dates[0].startDate}-${event.location}-${event.dates[0].time}`;
         mapEvents(eventMap, events, mappedCategories, eventKey);
 
         const found = await scrollToLoadMoreButton(page);
