@@ -107,7 +107,7 @@ const apiMoreBase = 'https://visitlaholm.se/appresource/4.58e0ed1f18bfae8ae2b2cf
                     ]
                 }));
 
-                const eventKey = (event) => `${event.title}-${event.dates[0].startDate}-${event.location}`;
+                const eventKey = (event) => `${event.title}-${event.dates[0].startDate}-${event.location}-${event.dates[0].time}`;
                 mapEvents(eventMap, event, mappedCategories, eventKey);          
         }
 

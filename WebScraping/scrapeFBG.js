@@ -142,7 +142,7 @@ const falkenbergUrl ='https://falkenberg.se/evenemang';
             console.log(`Scraping page ${currentPage}`);
             const events = await extractEvents(page);     
 
-            const eventKey = (event) => `${event.title}-${event.dates[0].startDate}-${event.location}`;
+            const eventKey = (event) => `${event.title}-${event.dates[0].startDate}-${event.location}-${event.dates[0].time}`;
             mapEvents(eventMap, events, mappedCategories, eventKey);
 
 

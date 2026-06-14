@@ -151,7 +151,7 @@ async function runScraper(){
             
             const event = mapKungsbackaEvents(items,htmlLocationMap,formatDate)
 
-            const eventKey = (event) => `${event.link}-${event.dates[0].startDate}`;
+            const eventKey = (event) => `${event.title}-${event.dates[0].startDate}-${event.location}-${event.dates[0].time}`;
             mapEvents(eventMap,event,mappedCategories, eventKey);
 
             while(true){

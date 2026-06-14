@@ -1,265 +1,147 @@
-const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 const {normalizeCategories} = require('./helpers/normalize.categories');
 const {mapEvents} = require('./helpers/event.mapper');
-const {gotoWithRetry} = require('./helpers/goto.page');
-const halmstadUrl = 'https://www.destinationhalmstad.se/evenemang';
+
+const baseUrl = 'https://www.destinationhalmstad.se/evenemang';
+const svTarget = '12.1ab5eabc17db94813782472d';
+
+const swedishMonths = {
+    januari: "01", jan: "01",
+    februari: "02", feb: "02",
+    mars: "03",
+    april: "04", apr: "04",
+    maj: "05",
+    juni: "06",
+    juli: "07",
+    augusti: "08", aug: "08",
+    september: "09", sep: "09",
+    oktober: "10", okt: "10",
+    november: "11", nov: "11",
+    december: "12", dec: "12",
+};
+
+function convertToISODate(swedishDateStr) {
+    if (!swedishDateStr) return null;
+    const match = swedishDateStr.match(/(\d{1,2}) (\w+) (\d{4})/);
+    if (!match) return null;
+    const [_, day, monthName, year] = match;
+    const month = swedishMonths[monthName.toLowerCase()];
+    if (!month) return null;
+    return `${year}-${month}-${day.padStart(2, "0")}`;
+}
+
+function parseDateString(dateStr) {
+    if (!dateStr) return { startDate: null, endDate: null, time: undefined };
+
+    let timePart;
+    let datePart = dateStr;
+
+    if (dateStr.includes(',')) {
+        [datePart, timePart] = dateStr.split(',').map(s => s.trim());
+    } else if (dateStr.includes('kl.')) {
+        const klMatch = dateStr.match(/^(.*?)\s*kl\.\s*(.*)$/);
+        if (klMatch) {
+            datePart = klMatch[1].trim();
+            timePart = klMatch[2].trim();
+        }
+    }
+
+    if (datePart.includes('–')) {
+        let [start, end] = datePart.split('–').map(s => s.trim());
+        const yearMatch = end.match(/\d{4}/);
+        const year = yearMatch ? yearMatch[0] : null;
+        const startIsOnlyDay = /^\d+$/.test(start.trim());
+        if (startIsOnlyDay && year) {
+            const monthMatch = end.match(/\d+\s+(\w+)/);
+            if (monthMatch) start = `${start} ${monthMatch[1]} ${year}`;
+        } else if (!/\d{4}/.test(start) && year) {
+            start = `${start} ${year}`;
+        }
+
+        return {
+            startDate: convertToISODate(start),
+            endDate: convertToISODate(end),
+            time: timePart ? timePart.replace(/\./g, ':') : undefined,
+        };
+    }
+
+    return {
+        startDate: convertToISODate(datePart),
+        endDate: convertToISODate(datePart),
+        time: timePart ? timePart.replace(/\./g, ':') : undefined,
+    };
+}
 
 (async () => {
-    const browser = await chromium.launch({ headless: true});
-    const page = await browser.newPage();
-    await gotoWithRetry(page,halmstadUrl);
+    const res = await fetch(baseUrl);
+    const html = await res.text();
 
-    // ✅ Accept Cookiebot popup
-    try {
-        await page.getByRole("button", { name: "Samtyck till alla kakor" }).click();
-        console.log("✅ Cookie banner accepted using locator.");
-    } catch (e) {
-        console.log("⚠️ Cookie banner not found or already accepted.");
-    }
-
-  // Scroll to trigger lazy loading
-
-  async function extractEvents(page) {
-        // Extract events
-        const events = await page.$$eval(
-        'ul[class^="lp-cruncho-event-list"] > li',
-        (cards) => {
-            const swedishMonths = {
-            januari: "01",
-            jan: "01",
-            februari: "02",
-            feb: "02",
-            mars: "03",
-            april: "04",
-            apr: "04",
-            maj: "05",
-            juni: "06",
-            juli: "07",
-            augusti: "08",
-            aug: "08",
-            september: "09",
-            sep: "09",
-            oktober: "10",
-            okt: "10",
-            november: "11",
-            nov: "11",
-            december: "12",
-            dec: "12",
-            };
-
-            function convertToISODate(swedishDateStr) {
-            const match = swedishDateStr.match(/(\d{1,2}) (\w+) (\d{4})/);
-            if (!match) return null;
-
-            const [_, day, monthName, year] = match;
-            const month = swedishMonths[monthName.toLowerCase()];
-            if (!month) return null;
-
-            const paddedDay = day.padStart(2, "0");
-            return `${year}-${month}-${paddedDay}`;
-            }
-
-            function parseDateString(dateStr) {
-            // Separate time if exists
-            let [datePart, timePart] = dateStr.split(",").map((s) => s.trim());
-
-            // Handle date range with "–"
-            if (datePart.includes("–")) {
-                // Split start and end
-                let [start, end] = datePart.split("–").map((s) => s.trim());
-
-                // To extract year, find the 4-digit year in end or start
-                // Usually year is at the end, e.g. "16 augusti 2025"
-                const yearMatch = end.match(/\d{4}/);
-                const year = yearMatch ? yearMatch[0] : null;
-
-                // For start date, if no year present, add year from end date
-                const startYearPresent = /\d{4}/.test(start);
-
-                // If start lacks year, add it
-                if (!startYearPresent && year) start = `${start} ${year}`;
-
-                return {
-                startDate: convertToISODate(start),
-                endDate: convertToISODate(end),
-                time: timePart ? timePart.replace(/\./g, ":") : undefined,
-                };
-            } else {
-                // Single date case
-                return {
-                startDate: convertToISODate(datePart),
-                endDate: convertToISODate(datePart),
-                time: timePart ? timePart.replace(/\./g, ":") : undefined,
-                };
-            }
-            }
-
-            return cards.map((card) => {
-            const title =
-                card.querySelector("h3")?.innerText?.trim() || "";
-            let dates = [];
-
-            // Get all li elements with lp-cruncho-event-date class (single or multiple dates)
-            const liDateElements = card.querySelectorAll(
-                'li[class^="lp-cruncho-event-date"]',
-            );
-
-            // Get all spans with class lp-cruncho-event-dates (for date ranges)
-            const spanDateElements = card.querySelectorAll(
-                "span.lp-cruncho-event-dates",
-            );
-
-            // Parse li elements
-            for (const li of liDateElements) {
-                const text = li?.innerText?.trim() || "";
-                if (!text) continue;
-
-                const dateObj = parseDateString(text);
-                dates.push(dateObj);
-            }
-
-            // Parse span elements with date ranges
-            for (const span of spanDateElements) {
-                const text = span?.innerText?.trim() || "";
-                if (!text) continue;
-
-                const dateObj = parseDateString(text);
-                dates.push(dateObj);
-            }
-
-            // If no dates found, fallback to single element with class containing date
-            if (dates.length === 0) {
-                const singleDateElement = card.querySelector(
-                '[class*="lp-cruncho-event-date"], span.lp-cruncho-event-dates',
-                );
-                if (singleDateElement) {
-                const dateObj = parseDateString(
-                    singleDateElement.innerText.trim(),
-                );
-                dates.push(dateObj);
-                }
-            }
-
-            const link = card.querySelector("a")?.href || "";
-
-            const locationElement = card.querySelector(
-                'span[class^="lp-cruncho-event-venue__name"]',
-            );
-            const location = locationElement?.innerText?.trim() || "Okänd plats";
-            const description =
-                card
-                .querySelector('span[class^="lp-cruncho-event-excerpt__content"]')
-                ?.innerText?.trim() || "";
-            const img = card.querySelector("img")?.src || "";
-            const ort = "Halmstad";
-
-            return { title, dates, description, link, location, img, ort };
-            });
-        },
-        );
-
-        return events;
-    }
-
-    //Scroll till finds button
-    async function scrollToLoadMoreButton(page) {
-        const loadMoreButton = page.getByRole("button", {
-        name: "Läs in fler evenemang",
-        });
-        const count = 8;
-        for (let i = 0; i < count; i++) {
-        const isVisible = await loadMoreButton.isVisible().catch(() => false);
-        await page.mouse.wheel(0, 1000);
-        await page.waitForTimeout(1500);
-        if (isVisible) {
-            console.log("Found button");
-            if (i === 5) {
-            return true;
-            }
+    const liRegex = /<li[^>]*class="[^"]*lp-cruncho-filter-multiselect-option[^"]*"[\s\S]*?<\/li>/gi;
+    const categories = [];
+    let liMatch;
+    while ((liMatch = liRegex.exec(html)) !== null) {
+        const li = liMatch[0];
+        const valueMatch = li.match(/<input[^>]*value="([^"]*)"[^>]*\/?>/);
+        const nameMatch = li.match(/<[a-z]+\b[^>]*>\s*([^<]+)\s*<\//);
+        if (valueMatch && nameMatch) {
+            categories.push({ slug: valueMatch[1], name: nameMatch[1].trim() });
         }
-        }
-        console.log('"Läs in fler evenemang" button not found after scrolling.');
-        return false;
     }
 
-    const filterButton = page.locator('div.lp-cruncho-filter-toggle');
-    const panelUL = 'div.lp-cruncho-filter-multiselect ul.lp-cruncho-filter-multiselect__list';
-
-    // Open filter if not already "expanded"
-    const isExpanded = await filterButton.getAttribute('aria-expanded');
-    console.log('Filter button aria-expanded before click:', isExpanded);
-
-    if (isExpanded !== 'true') {
-    console.log('🔘 Clicking filter toggle to open panel...');
-    await filterButton.click();
-    await page.waitForTimeout(1000); // wait for JS to populate the list
-    }
-
-    // Wait for the <ul> to exist in the DOM, ignore visibility
-    await page.waitForSelector(panelUL, { state: 'attached', timeout: 10000 });
-
-    // Now safely read category inputs
-    const categoryInputs = await page.$$eval(
-    panelUL + ' > li.lp-cruncho-filter-multiselect-option input.lp-cruncho-filter-multiselect-option__input',
-    (inputs) =>
-        inputs.map(i => ({
-        name: i.nextElementSibling?.innerText?.trim() || null,
-        value: i.value || null,
-        }))
-    );
-
-    console.log("Found categories:", categoryInputs);
+    console.log(`Found ${categories.length} categories`);
 
     const eventMap = new Map();
+    const headers = { 'X-Requested-With': 'XMLHttpRequest' };
 
-    for (const cat of categoryInputs) {
-        const category = cat.name;
-        const mappedCategories = normalizeCategories(category, 'hstd');
+    for (const cat of categories) {
+        const mappedCategories = normalizeCategories(cat.name, 'hstd');
         if (!mappedCategories) {
-            console.log(`⚠️ Skipping unknown category "${category}"`);
+            console.log(`⚠️ Skipping unknown category "${cat.name}"`);
             continue;
         }
 
-        console.log(`🔍 Scraping category "${category}"`);
+        console.log(`🔍 Scraping category: ${cat.name}`);
 
-        const categoryUrl = `${halmstadUrl}?category=${cat.value}`;
-
-        await page.goto(categoryUrl, { waitUntil: "domcontentloaded" });
-        await page.waitForTimeout(1500);
-
-        let currentPage = 1;
+        let page = 1;
 
         while (true) {
-        console.log(`Scraping page ${currentPage}`);
+            const offset = (page - 1) * 15;
+            const apiUrl = `${baseUrl}?sv.target=${svTarget}&sv.${svTarget}.route=/&dateFrom=&dateTo=&query=&venue=&area=&category=${encodeURIComponent(cat.slug)}&targetGroup=&view=grid&page=${page}&offset=${offset}&svAjaxReqParam=ajax`;
 
-        const events = await extractEvents(page);
+            const res = await fetch(apiUrl, { headers });
+            const data = await res.json();
+            const items = data?.events || [];
 
-        const eventKey = (event) => `${event.title}-${event.dates[0].startDate}-${event.location}`;
-        mapEvents(eventMap, events, mappedCategories, eventKey);
+            if (!items.length) {
+                console.log(`✅ Done with category ${cat.name}`);
+                break;
+            }
 
-        const found = await scrollToLoadMoreButton(page);
-        if (!found) {
-            break;
-        }
+            const events = items.map(event => ({
+                title: event.name || '',
+                img: event.image?.link || '',
+                ort: 'Halmstad',
+                location: event.venue || 'Okänd plats',
+                link: event.link ? `https://www.destinationhalmstad.se${event.link}` : '',
+                description: event.description || '',
+                dates: (event.dates?.entries || []).map(entry => parseDateString(entry))
+            }));
 
-        await page.getByRole("button", { name: "Läs in fler evenemang" }).click();
-        await page.waitForTimeout(1000);
-        await page.waitForLoadState("domcontentloaded");
-        currentPage++;
+            const eventKey = (event) =>
+                `${event.title}-${event.dates[0].startDate}-${event.location}-${event.dates[0].time}`;
+
+            mapEvents(eventMap, events, mappedCategories, eventKey);
+
+            console.log(`📄 Page ${page} -> ${events.length} events`);
+
+            if (data.nextPage === false) break;
+            page++;
         }
     }
 
     const allEvents = Array.from(eventMap.values());
-    console.log(allEvents);
     const filePath = path.join(__dirname, 'eventsHSTD.json');
-    fs.writeFileSync(
-        filePath,
-        JSON.stringify(allEvents, null, 2),
-        "utf-8",
-    );
-    console.log(`📝 ${allEvents.length} Events saved to eventsHSTD.json`);
-
-    await browser.close();
+    fs.writeFileSync(filePath, JSON.stringify(allEvents, null, 2), 'utf-8');
+    console.log(`📝 Saved ${allEvents.length} events to eventsHSTD.json`);
 })();
