@@ -109,7 +109,7 @@ export default function HomePage(){
                         </div>
                         <div className="footer-contact">
                             <p>Kontakt</p>
-                            <p>E-post: halland.events@gmail.com</p>
+                            <p>E-post: hallandevents@gmail.com</p>
                         </div>
                         <div className="footer-links">
                             <p>Snabblänkar</p>
