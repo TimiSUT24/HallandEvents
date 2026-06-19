@@ -61,12 +61,22 @@ namespace EventExtension
             // Endpoint rate limiting
             builder.Services.AddRateLimiter(options =>
             {
-                options.AddFixedWindowLimiter("fixed", opt =>
+                options.RejectionStatusCode = 429;
+                options.AddPolicy("fixed", context =>
                 {
-                    opt.PermitLimit = 8;
-                    opt.Window = TimeSpan.FromSeconds(10);
-                    opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                    opt.QueueLimit = 0;
+                    var forwardedFor = context.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+                    var ip = forwardedFor?.Split(',').First().Trim()
+                             ?? context.Connection.RemoteIpAddress?.ToString()
+                             ?? "unknown";
+                    return RateLimitPartition.GetFixedWindowLimiter(
+                        ip,
+                        _ => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = 50,
+                            Window = TimeSpan.FromSeconds(30),
+                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                            QueueLimit = 0
+                        });
                 });
             });
 
