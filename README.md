@@ -1,4 +1,3 @@
-[HallandEvents-README.md](https://github.com/user-attachments/files/34295970/HallandEvents-README.md)
 # Halland Events
 
 [![Live site](https://img.shields.io/badge/live-hallandevents.se-2ea44f)](https://hallandevents.se)
